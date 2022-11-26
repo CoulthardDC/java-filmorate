@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,21 +28,9 @@ public class UserController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         log.info("Получен запрос к эндпоинту: {} {}", "POST", "/users");
-        if (user.getEmail().isBlank()
-                || !user.getEmail().contains("@")
-                ||user.getLogin().isBlank()
-                || user.getLogin().contains(" ")
-                || user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Ошибка при добавлении пользователя");
-            throw new ValidationException("Ошибка валидации при добавлении пользователя");
-        }
         user.setId(++id);
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-            log.info("Имя пользователя {} равно логину пользователя: {}", user.getId(), user.getName());
-        }
         users.put(user.getId(), user);
         log.info("Пользователь {} добавлен, id: {}", user.getName(), user.getId());
         return user;
@@ -51,18 +39,9 @@ public class UserController {
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public User update(@RequestBody User user) {
         log.info("Получен запрос к эндпоинту: {} {}", "PUT", "/users");
-        if (user.getEmail().isBlank()
-                || !user.getEmail().contains("@")
-                ||user.getLogin().isBlank()
-                || user.getLogin().contains(" ")
-                || user.getId() > id
-                || user.getBirthday().isAfter(LocalDate.now())) {
+        if (user.getId() > id) {
             log.warn("Ошибка при обновлении пользователя");
             throw new ValidationException("Ошибка валидации при обновлении пользователя");
-        }
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-            log.info("Имя пользователя {} равно логину пользователя: {}", user.getId(), user.getName());
         }
         users.replace(user.getId(), user);
         return user;

@@ -1,23 +1,27 @@
 package ru.yandex.practicum.filmorate.model;
 
 import java.time.LocalDate;
-import java.time.Duration;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.AccessLevel;
 import lombok.Data;
-import lombok.NonNull;
-import ru.yandex.practicum.filmorate.controller.serializer.DurationSerializer;
+import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.filmorate.annotation.FilmReleaseDateConstraint;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
-    private Integer id;
-    @NonNull
-    private String name;
-    private String description;
-    @NonNull
-    private LocalDate releaseDate;
-    @NonNull
-    @JsonSerialize(using = DurationSerializer.class)
-    private Duration duration;
+    Integer id;
+    @NotBlank
+    final String name;
+    @Size(max = 200)
+    final String description;
+    @FilmReleaseDateConstraint
+    final LocalDate releaseDate;
+    @Positive
+    final Long duration;
 }
