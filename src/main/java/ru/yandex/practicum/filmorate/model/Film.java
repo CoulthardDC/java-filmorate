@@ -17,11 +17,18 @@ import javax.validation.constraints.Size;
 public class Film {
     Integer id;
     @NotBlank
-    final String name;
+    String name;
     @Size(max = 200)
-    final String description;
+    String description;
     @FilmReleaseDateConstraint
-    final LocalDate releaseDate;
+    LocalDate releaseDate;
     @Positive
-    final Long duration;
+    Long duration;
+
+    public Film(String name, String description, LocalDate releaseDate, long duration) {
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+    }
 }

@@ -16,12 +16,12 @@ public class User {
     Integer id;
     @NonNull
     @Email
-    final String email;
+    String email;
     @LoginConstraint
-    final String login;
+    String login;
     String name;
     @PastOrPresent
-    final LocalDate birthday;
+    LocalDate birthday;
 
 
     public User(String email, String login, LocalDate birthday) {
