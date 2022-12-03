@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -71,7 +71,7 @@ public class FilmValidationTest {
         Film film = new Film(
                 "Назад в будущее",
                 "Хороший фильм",
-                LocalDate.of(2000, Month.JULY, 20),
+                LocalDate.of(1985, Month.JULY, 3),
                 (long)100
         );
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
@@ -97,7 +97,7 @@ public class FilmValidationTest {
         Film film = new Film(
                 "Назад в будущее",
                 "Хороший фильм",
-                LocalDate.of(2000, Month.JULY, 20),
+                LocalDate.of(1985, Month.JULY, 3),
                 (long)100
         );
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
@@ -123,7 +123,7 @@ public class FilmValidationTest {
         Film film = new Film(
                 "Назад в будущее",
                 "Хороший фильм",
-                LocalDate.of(2000, Month.JULY, 20),
+                LocalDate.of(1985, Month.JULY, 3),
                 (long)100
         );
         Set<ConstraintViolation<Film>> violations = validator.validate(film);

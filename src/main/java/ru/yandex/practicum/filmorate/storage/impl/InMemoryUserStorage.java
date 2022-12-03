@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.intr.UserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
 
@@ -12,33 +12,48 @@ public class InMemoryUserStorage implements UserStorage {
     private Integer id = 0;
 
     @Override
-    public User addUser(User user) {
-        if (user.getName().isBlank()) {
+    public Integer count() {
+        return id;
+    }
+
+    @Override
+    public void deleteAll() {
+        users.clear();
+    }
+
+    @Override
+    public void deleteById(Integer id) {
+        users.remove(id);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return new ArrayList<>(users.values());
+    }
+
+    @Override
+    public Optional<User> findById(Integer id) {
+        return Optional.ofNullable(users.get(id));
+    }
+
+    @Override
+    public User save(User user) {
+        if (user.getId() == null) {
+            user.setId(++id);
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        user.setId(++id);
-        users.put(id, user);
+        users.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public User removeUserById(Integer id) {
-        return users.remove(id);
+    public Optional<List<Integer>> findFriendsByUserId(Integer userId) {
+        if (findById(userId).isPresent()) {
+            return Optional.of(new ArrayList<>(users.get(userId).getFriends()));
+        } else {
+            return Optional.empty();
+        }
     }
-
-    @Override
-    public User updateUserById(Integer id, User user) {
-        return users.replace(id, user);
-    }
-
-    @Override
-    public User getUserById(Integer id) {
-        return users.get(id);
-    }
-
-    @Override
-    public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
-    }
-
 }

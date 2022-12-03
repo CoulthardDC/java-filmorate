@@ -2,9 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -57,18 +58,16 @@ public class FilmController {
     }
 
     @PutMapping(value = "/{id}/like/{userId}")
-    public Film addLikeToFilm(@PathVariable("id") int filmId, @PathVariable int userId) {
-        log.info("Получен запрос к эндпоинту: {} /{}/like/{}", "PUT", filmId, userId);
+    public ResponseEntity<?> addLikeToFilm(@PathVariable("id") int filmId, @PathVariable int userId) {
+        log.info("Получен запрос к эндпоинту: {} /films/{}/like/{}", "PUT", filmId, userId);
         filmService.addLikeToFilm(filmId, userId);
-        return filmService.getFilmById(filmId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @DeleteMapping(value = "/{id}/like/{userId}")
-    public Film removeLikeFromFilm(@PathVariable("id") int filmId, @PathVariable int userId) {
-        log.info("Получен запрос к эндпоинту: {} /{}/like/{}", "DELETE", filmId, userId);
+    public ResponseEntity<Object> removeLikeFromFilm(@PathVariable("id") int filmId, @PathVariable int userId) {
+        log.info("Получен запрос к эндпоинту: {} /films/{}/like/{}", "DELETE", filmId, userId);
         filmService.removeLikeFromFilm(filmId, userId);
-        return filmService.getFilmById(filmId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
-
-
 }

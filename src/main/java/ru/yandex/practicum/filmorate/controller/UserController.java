@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -62,16 +62,16 @@ public class UserController {
     }
 
     @PutMapping(value = "/{id}/friends/{friendId}")
-    public User addToFriends(@PathVariable("id") int userId, @PathVariable int friendId) {
-        log.info("Получение запроса к эндпоинту: {} /{}/friends/{}", "PUT", userId, friendId);
-        return userService.addToFriend(userId, friendId);
+    public ResponseEntity<?> addToFriends(@PathVariable("id") int userId, @PathVariable int friendId) {
+        log.info("Получение запроса к эндпоинту: {} users/{}/friends/{}", "PUT", userId, friendId);
+        userService.addToFriend(userId, friendId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @DeleteMapping(value = "/{id}/friends/{friendId}")
-    public User removeFromFriends(@PathVariable("id") int userId, @PathVariable int friendId) {
-        log.info("Получение запроса к эндпоинту: {} /{}/friends/{}", "DELETE", userId, friendId);
-        return userService.removeFriend(userId, friendId);
+    public ResponseEntity<?> removeFromFriends(@PathVariable("id") int userId, @PathVariable int friendId) {
+        log.info("Получение запроса к эндпоинту: {} users/{}/friends/{}", "DELETE", userId, friendId);
+        userService.removeFriend(userId, friendId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
-
-
 }
