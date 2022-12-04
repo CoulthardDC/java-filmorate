@@ -29,7 +29,7 @@ public class UserService {
     }
 
     public User getUserById(Integer id) {
-        return userStorage.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        return findUserOrElseThrow(id);
     }
 
     public User addUser(User user) {
@@ -39,38 +39,33 @@ public class UserService {
 
     public User updateUserById(User user) {
         Integer id = user.getId();
-        userStorage.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        findUserOrElseThrow(id);
         userStorage.save(user);
         return user;
     }
 
     public void removeUserById(Integer id) {
-        userStorage.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        findUserOrElseThrow(id);
         userStorage.deleteById(id);
     }
 
 
     public void addToFriend(Integer userId, Integer friendId) {
-        User user = userStorage.findById(userId).orElseThrow(
-                () -> new UserNotFoundException(userId));
-        User friend = userStorage.findById(friendId).orElseThrow(
-                () -> new UserNotFoundException(friendId));
+        User user = findUserOrElseThrow(userId);
+        User friend = findUserOrElseThrow(friendId);
         user.addFriend(friendId);
         friend.addFriend(userId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        User user = userStorage.findById(userId).orElseThrow(
-                () -> new UserNotFoundException(userId));
-        User friend = userStorage.findById(friendId).orElseThrow(
-                () -> new UserNotFoundException(friendId));
+        User user = findUserOrElseThrow(userId);
+        User friend = findUserOrElseThrow(friendId);
         user.removeFriend(friendId);
         friend.removeFriend(userId);
     }
 
     public List<User> getUserFriend(Integer userId) {
-        User user = userStorage.findById(userId).orElseThrow(
-                () -> new UserNotFoundException(userId));
+        User user = findUserOrElseThrow(userId);
         return userStorage.findAll()
                 .stream()
                 .map(User::getId)
@@ -81,10 +76,8 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
-        User user = userStorage.findById(userId).orElseThrow(
-                () -> new UserNotFoundException(userId));
-        User other = userStorage.findById(otherId).orElseThrow(
-                () -> new UserNotFoundException(otherId));
+        User user = findUserOrElseThrow(userId);
+        User other = findUserOrElseThrow(otherId);
         Set<User> userFriends = userStorage.findAll()
                 .stream()
                 .map(User::getId)
@@ -92,6 +85,7 @@ public class UserService {
                 .map(userStorage::findById)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
+
         Set<User> otherFriends = userStorage.findAll()
                 .stream()
                 .map(User::getId)
@@ -101,5 +95,10 @@ public class UserService {
                 .collect(Collectors.toSet());
         userFriends.retainAll(otherFriends);
         return new ArrayList<>(userFriends);
+    }
+
+    private User findUserOrElseThrow(Integer userId) {
+        return userStorage.findById(userId).orElseThrow(
+                () -> new UserNotFoundException(userId));
     }
 }

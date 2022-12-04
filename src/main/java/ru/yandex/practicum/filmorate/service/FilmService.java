@@ -29,7 +29,7 @@ public class FilmService {
     }
 
     public Film getFilmById(Integer id) {
-        return filmStorage.findById(id).orElseThrow(() -> new FilmNotFoundException(id));
+        return findFilmOrElseThrow(id);
     }
 
     public Film addFilm(Film film) {
@@ -39,23 +39,23 @@ public class FilmService {
 
     public Film updateFilmById(Film film) {
        Integer id = film.getId();
-       filmStorage.findById(id).orElseThrow(() -> new FilmNotFoundException(id));
+        findFilmOrElseThrow(id);
        filmStorage.save(film);
        return film;
     }
 
     public void removeFilmById(Integer id) {
-        filmStorage.findById(id).orElseThrow(() -> new FilmNotFoundException(id));
+        findFilmOrElseThrow(id);
         filmStorage.deleteById(id);
     }
 
     public void addLikeToFilm(Integer filmId, Integer userId) {
-        Film film = filmStorage.findById(filmId).orElseThrow(() -> new FilmNotFoundException(filmId));
+        Film film = findFilmOrElseThrow(filmId);
         film.addLike(userId);
     }
 
     public void removeLikeFromFilm(Integer filmId, Integer userId) {
-        Film film = filmStorage.findById(filmId).orElseThrow(() -> new FilmNotFoundException(filmId));
+        Film film = findFilmOrElseThrow(filmId);
         if (!film.removeLike(userId)) {
             throw new InvalidIdException(String.format(
                     "Юзер id = %d не ставил лайк фильму id = %d", userId, filmId));
@@ -75,5 +75,10 @@ public class FilmService {
                     .limit(count)
                     .collect(Collectors.toList());
         }
+    }
+
+    private Film findFilmOrElseThrow(Integer filmId) {
+        return filmStorage.findById(filmId).orElseThrow(
+                () -> new FilmNotFoundException(filmId));
     }
 }
