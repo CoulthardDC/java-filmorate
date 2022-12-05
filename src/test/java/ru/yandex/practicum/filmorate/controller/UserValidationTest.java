@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -54,6 +54,7 @@ public class UserValidationTest {
                 " ",
                 LocalDate.of(1998, Month.JUNE, 28)
         );
+
         User userTwo = new User(
                 "evgen@yandex.ru",
                 "ev gen",
@@ -87,6 +88,7 @@ public class UserValidationTest {
                 "evgen",
                 LocalDate.of(1998, Month.JUNE, 28)
         );
+
         User userTwo = new User (
                 "evgen@yandex.ru",
                 "evgen",
