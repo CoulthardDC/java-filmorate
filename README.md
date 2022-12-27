@@ -23,10 +23,8 @@ VALUES (1, 2, TRUE);
 
 ### Получение друзей пользователя:
 ```sql
-SELECT *
-FROM users AS u
-LEFT JOIN friendship AS f ON u.user_id = f.from_user_id
-WHERE f.to_user_id = 2;
+SELECT to_user_id FROM friendship
+WHERE from_user_id = ?
 ```
 
 ### Добавление фильма:
