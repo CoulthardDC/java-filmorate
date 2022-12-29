@@ -10,9 +10,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component("userDbStorage")
@@ -49,19 +47,22 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> findAll() {
         String sqlRequest = "SELECT * FROM users";
-        return jdbcTemplate.query(sqlRequest, UserMapper::mapToUser)
-                .stream()
-                .map(this::setFriends)
-                .collect(Collectors.toList());
+        List<User> result =jdbcTemplate.query(sqlRequest, UserMapper::mapToUser);
+        setFriends(result);
+        return result;
     }
 
     @Override
     public Optional<User> findById(Integer userId) {
         String sqlRequest = "SELECT * FROM users WHERE user_id = ?";
-        return jdbcTemplate.query(sqlRequest, UserMapper::mapToUser, userId)
-                .stream()
-                .map(this::setFriends)
-                .findFirst();
+        List<User> result = jdbcTemplate.query(sqlRequest, UserMapper::mapToUser, userId);
+        if (result.isEmpty()) {
+            return Optional.empty();
+        } else {
+            setFriends(result);
+            return result.stream().findFirst();
+        }
+
     }
 
     @Override
@@ -144,11 +145,23 @@ public class UserDbStorage implements UserStorage {
             return new ArrayList<>();
         }
     }
-    private User setFriends(User user) {
-        Optional<List<Integer>> friendsId = findFriendsByUserId(user.getId());
-        friendsId.ifPresent(integers -> integers
-                .forEach(user::addFriend));
-        return user;
+    private void setFriends(List<User> users) {
+        List<Integer> usersId = users
+                .stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+        Map<Integer, User> userMap = new HashMap<>();
+        for (User user : users) {
+            userMap.put(user.getId(), user);
+        }
+        String inSql = String.join(",", Collections.nCopies(usersId.size(), "?"));
+
+        String sqlRequest = "SELECT from_user_id, to_user_id FROM friendship " +
+                "WHERE from_user_id in (%s)";
+        jdbcTemplate.query(String.format(sqlRequest, inSql), rs -> {
+            userMap.get(rs.getInt("from_user_id"))
+                    .addFriend(rs.getInt("to_user_id"));
+            }, usersId.toArray());
     };
 
     private boolean isUser (Integer userId) {
