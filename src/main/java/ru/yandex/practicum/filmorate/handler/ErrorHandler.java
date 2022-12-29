@@ -19,7 +19,11 @@ public class ErrorHandler {
         return new ErrorResponse("Ошибка валидации", e.getMessage());
     }
 
-    @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class})
+    @ExceptionHandler({FilmNotFoundException.class,
+            UserNotFoundException.class,
+            GenreNotFoundException.class,
+            MpaNotFoundedException.class}
+    )
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final InvalidIdException e) {
         log.warn(e.getMessage());

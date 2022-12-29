@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -20,7 +21,7 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(InMemoryUserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -33,15 +34,13 @@ public class UserService {
     }
 
     public User addUser(User user) {
-        userStorage.save(user);
-        return user;
+        return userStorage.save(user);
     }
 
     public User updateUserById(User user) {
         Integer id = user.getId();
         findUserOrElseThrow(id);
-        userStorage.save(user);
-        return user;
+        return userStorage.save(user);
     }
 
     public void removeUserById(Integer id) {
@@ -53,48 +52,27 @@ public class UserService {
     public void addToFriend(Integer userId, Integer friendId) {
         User user = findUserOrElseThrow(userId);
         User friend = findUserOrElseThrow(friendId);
-        user.addFriend(friendId);
-        friend.addFriend(userId);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
         User user = findUserOrElseThrow(userId);
         User friend = findUserOrElseThrow(friendId);
-        user.removeFriend(friendId);
-        friend.removeFriend(userId);
+        userStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getUserFriend(Integer userId) {
         User user = findUserOrElseThrow(userId);
-        return userStorage.findAll()
+        return userStorage.findFriendsByUserId(userId)
+                .orElse(new ArrayList<>())
                 .stream()
-                .map(User::getId)
-                .filter(p -> user.getFriends().contains(p))
                 .map(userStorage::findById)
                 .map(Optional::get)
                 .collect(Collectors.toList());
     }
 
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
-        User user = findUserOrElseThrow(userId);
-        User other = findUserOrElseThrow(otherId);
-        Set<User> userFriends = userStorage.findAll()
-                .stream()
-                .map(User::getId)
-                .filter(p -> user.getFriends().contains(p))
-                .map(userStorage::findById)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
-
-        Set<User> otherFriends = userStorage.findAll()
-                .stream()
-                .map(User::getId)
-                .filter(p -> other.getFriends().contains(p))
-                .map(userStorage::findById)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
-        userFriends.retainAll(otherFriends);
-        return new ArrayList<>(userFriends);
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
     private User findUserOrElseThrow(Integer userId) {

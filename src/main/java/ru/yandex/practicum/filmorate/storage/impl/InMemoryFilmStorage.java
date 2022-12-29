@@ -54,4 +54,19 @@ public class InMemoryFilmStorage implements FilmStorage {
             return Optional.empty();
         }
     }
+
+    @Override
+    public void addLike(Integer filmId, Integer userId) {
+
+    }
+
+    @Override
+    public void deleteLike(Integer filmId, Integer userId) {
+
+    }
+
+    @Override
+    public List<Film> getTopFilms(Integer count) {
+        return null;
+    }
 }
