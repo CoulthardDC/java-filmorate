@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,9 +29,11 @@ public class Film {
     @NotNull()
     @Positive()
     Long duration;
+    @NotNull
+    Mpa mpa = new Mpa();
 
-    @JsonIgnore
     Set<Integer> likes = new HashSet<>();
+    Set<Genre> genres = new HashSet<>();
 
     public Film(String name, String description, LocalDate releaseDate, long duration) {
         this.name = name;
@@ -45,7 +46,7 @@ public class Film {
         likes.add(userId);
     }
 
-    public boolean removeLike(Integer userId) {
-        return likes.remove(userId);
+    public void addGenre(Genre genre) {
+        genres.add(genre);
     }
 }

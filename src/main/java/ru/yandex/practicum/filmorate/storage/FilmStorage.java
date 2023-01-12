@@ -13,5 +13,7 @@ public interface FilmStorage {
     Optional<Film> findById(Integer id);
     Film save(Film film);
     Optional<List<Integer>> findLikesByFilmId(Integer filmId);
-
+    public void addLike(Integer filmId, Integer userId);
+    public void deleteLike(Integer filmId, Integer userId);
+    public List<Film> getTopFilms(Integer count);
 }
