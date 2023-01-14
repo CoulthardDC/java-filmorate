@@ -55,7 +55,12 @@ public class FilmDbStorage implements FilmStorage {
         String sqlRequest = "SELECT f.*, m.name as mpa_name"
                 +" FROM films f"
                 +" LEFT JOIN mpa m ON f.mpa_id = m.mpa_id";
-        List<Film> films = jdbcTemplate.query(sqlRequest, FilmMapper::mapToFilm);
+        List<Film> films = jdbcTemplate.query(sqlRequest, new RowMapper<Film>() {
+            @Override
+            public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return FilmMapper.mapToFilm(rs, rowNum);
+            }
+        });
         setGenresAndLikes(films);
         return films;
     }

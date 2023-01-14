@@ -22,7 +22,8 @@ public class ErrorHandler {
     @ExceptionHandler({FilmNotFoundException.class,
             UserNotFoundException.class,
             GenreNotFoundException.class,
-            MpaNotFoundedException.class}
+            MpaNotFoundedException.class,
+            ReviewNotFoundException.class}
     )
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final InvalidIdException e) {
