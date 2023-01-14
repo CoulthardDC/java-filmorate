@@ -1,12 +1,16 @@
 package ru.yandex.practicum.filmorate.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.dto.error.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.*;
+
+import java.util.Objects;
 
 @RestControllerAdvice("ru.yandex.practicum.filmorate.controller")
 @Slf4j
@@ -42,5 +46,18 @@ public class ErrorHandler {
     public ErrorResponse handleInvalidParameterCount(final InvalidParameterCount e) {
         log.warn(e.getMessage());
         return new ErrorResponse("Ошибка при выполнении программы", e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMethodArgumentValidation(MethodArgumentNotValidException e) {
+        return new ErrorResponse("Ошибка валидации", String.valueOf(Objects.requireNonNull(e.getFieldError()).getDefaultMessage()));
+    }
+
+    @ExceptionHandler({EmptyResultDataAccessException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleIncorrectParameter() {
+        return new ErrorResponse("Ошибка выполнения запроса sql"
+                ,"По такому индентификатору данные не найдены.");
     }
 }
