@@ -29,13 +29,19 @@ public class ReviewDbStorage {
 
     public Review create(Review review) throws ValidationException, FilmNotFoundException, UserNotFoundException {
         if (review.getUserId() == 0 || review.getFilmId() == 0) {
-            throw new ValidationException("Данные отсутствуют.");
+            log.error("По userId = {} и filmId = {}} данные отсутствуют.", review.getUserId(), review.getFilmId());
+            throw new ValidationException(String.format("По userId = %s и filmId = %s данные отсутствуют."
+                    , review.getUserId(), review.getFilmId()));
         }
         if (userDbStorage.findById(review.getUserId()).isEmpty()) {
-            throw new UserNotFoundException("Пользователь с таким id отсутствует.");
+            log.error("Пользователь с userId = {} отсутствует.", review.getUserId());
+            throw new UserNotFoundException(String.format("Пользователь с userId = %s отсутствует."
+                    , review.getUserId()));
         }
         if (filmDbStorage.findById(review.getFilmId()).isEmpty()) {
-            throw new FilmNotFoundException("Фильм с таким id отсутствует.");
+            log.error("Фильм с filmId = {} отсутствует.", review.getFilmId());
+            throw new FilmNotFoundException(String.format("Фильм с filmId = %s отсутствует."
+                    , review.getFilmId()));
         }
 
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
@@ -73,15 +79,22 @@ public class ReviewDbStorage {
     }
 
     public Collection<Review> getAllReviews() throws UserNotFoundException {
-        String sqlQuery = "SELECT * FROM REVIEWS";
+        String sqlQuery = "SELECT * FROM REVIEWS ORDER BY USEFUL DESC";
         Collection<Review> reviews = jdbcTemplate.query(sqlQuery, (resultSet, rowNum)
                 -> ReviewMapper.mapRowToReview(resultSet));
         reviews.forEach(review -> review.setLikes(getLikes(review.getReviewId())));
         return reviews;
     }
 
-    public Collection<Review> getAllReviewsByFilmId(int filmId, int count) throws UserNotFoundException {
-        String sqlQuery = "SELECT * FROM REVIEWS WHERE FILM_ID = ? LIMIT ?";
+    public Collection<Review> getAllReviewsByFilmId(int filmId, int count) throws UserNotFoundException
+            , FilmNotFoundException {
+        if (filmDbStorage.findById(filmId).isEmpty()) {
+            log.error("Фильм с filmId = {} отсутствует.", filmId);
+            throw new FilmNotFoundException(String.format("Фильм с filmId = %s отсутствует."
+                    , filmId));
+        }
+
+        String sqlQuery = "SELECT * FROM REVIEWS WHERE FILM_ID = ? ORDER BY USEFUL DESC LIMIT ? ";
         Collection<Review> reviews = jdbcTemplate.query(sqlQuery, (resultSet, rowNum)
                 -> ReviewMapper.mapRowToReview(resultSet), filmId, count);
         reviews.forEach(review -> review.setLikes(getLikes(review.getReviewId())));
@@ -89,15 +102,13 @@ public class ReviewDbStorage {
     }
 
     public Review update(Review review) throws ReviewNotFoundException, UserNotFoundException {
-        if (review.getReviewId() < 1) {
-            log.error("Отзыв с id = {} не найден.", review.getReviewId());
-            throw new ReviewNotFoundException(String.format("Отзыв с id = %s не найден.", review.getReviewId()));
+        if (getReviewById(review.getReviewId()) == null) {
+            log.error("Отзыв с reviewId = {} не найден.", review.getReviewId());
+            throw new ReviewNotFoundException(String.format("Отзыв с reviewId = %s не найден.", review.getReviewId()));
         }
 
-        String sqlQuery = "UPDATE REVIEWS SET CONTENT = ?, IS_POSITIVE = ?, USER_ID = ?, FILM_ID = ?, USEFUL = ? " +
-                "WHERE REVIEW_ID = ?";
-        jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getUserId()
-                , review.getFilmId() , review.getUseful(), review.getReviewId());
+        String sqlQuery = "UPDATE REVIEWS SET CONTENT = ?, IS_POSITIVE = ? WHERE REVIEW_ID = ?";
+        jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
 
         deleteUsersByReviewId(review.getReviewId());
 
@@ -119,9 +130,81 @@ public class ReviewDbStorage {
         return getReviewById(review.getReviewId());
     }
 
-    public Boolean deleteReview(int reviewId) {
-        String sqlQuery = "DELETE FROM REVIEWS WHERE REVIEW_ID = ?";
-        return jdbcTemplate.update(sqlQuery, reviewId) > 0;
+    public Boolean deleteReview(int reviewId) throws ReviewNotFoundException {
+        if (getReviewById(reviewId) == null) {
+            log.error("Отзыв с reviewId = {} не найден.", reviewId);
+            throw new ReviewNotFoundException(String.format("Отзыв с reviewId = %s не найден.", reviewId));
+        }
+
+        String sqlQueryForDeleteFromReviewsLikes = "DELETE FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ?";
+        jdbcTemplate.update(sqlQueryForDeleteFromReviewsLikes, reviewId);
+
+        String sqlQueryForDeleteFromReviews = "DELETE FROM REVIEWS WHERE REVIEW_ID = ?";
+
+        return jdbcTemplate.update(sqlQueryForDeleteFromReviews, reviewId) > 0;
+    }
+
+    public Review addLike(int reviewId, int userId) throws ReviewNotFoundException, UserNotFoundException {
+        reviewIdAndUserIdVerification(reviewId, userId);
+
+        String sqlQueryForAddLike = "MERGE INTO REVIEWS_LIKES_DISLIKES KEY(REVIEW_ID, USER_ID) VALUES (?, ?, true)";
+        jdbcTemplate.update(sqlQueryForAddLike, reviewId, userId);
+
+        String sqlQueryForUpdateUseful = "UPDATE REVIEWS SET USEFUL = USEFUL + (SELECT COUNT(USER_ID) " +
+                "FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ?  AND USER_ID = ? AND IS_LIKE = true) " +
+                "WHERE REVIEW_ID = ?";
+        jdbcTemplate.update(sqlQueryForUpdateUseful, reviewId, userId, reviewId);
+        log.info("Добавлен лайк отзыву с reviewId = {} от пользователя с userId = {}", reviewId, userId);
+        return getReviewById(reviewId);
+    }
+
+    public Review addDislike(int reviewId, int userId) throws ReviewNotFoundException, UserNotFoundException {
+        reviewIdAndUserIdVerification(reviewId, userId);
+
+        String sqlQueryForAddLike = "MERGE INTO REVIEWS_LIKES_DISLIKES KEY(REVIEW_ID, USER_ID) VALUES (?, ?, false)";
+        jdbcTemplate.update(sqlQueryForAddLike, reviewId, userId);
+
+        String sqlQueryForUpdateUseful = "UPDATE REVIEWS SET USEFUL = USEFUL - (SELECT COUNT(USER_ID) " +
+                "FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ? AND USER_ID = ? AND IS_LIKE = false) WHERE REVIEW_ID = ?";
+        jdbcTemplate.update(sqlQueryForUpdateUseful, reviewId, userId, reviewId);
+        log.info("Добавлен дизлайк отзыву с reviewId = {} от пользователя с userId = {}", reviewId, userId);
+        return getReviewById(reviewId);
+    }
+
+    public Review deleteLike(int reviewId, int userId) throws ReviewNotFoundException, UserNotFoundException {
+        reviewIdAndUserIdVerification(reviewId, userId);
+
+        String sqlQueryForUpdateUseful = "UPDATE REVIEWS SET USEFUL = USEFUL - (SELECT COUNT(USER_ID) " +
+                "FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ? AND USER_ID = ? AND IS_LIKE = true) WHERE REVIEW_ID = ?";
+        jdbcTemplate.update(sqlQueryForUpdateUseful, reviewId, userId, reviewId);
+
+        String sqlQueryForDeleteLike = "DELETE FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ? AND USER_ID = ? " +
+                "AND IS_LIKE = true";
+        jdbcTemplate.update(sqlQueryForDeleteLike, reviewId, userId);
+        log.info("Удален лайк от пользователя с userId = {} отзыву с reviewId = {}", userId, reviewId);
+
+        return getReviewById(reviewId);
+    }
+    public Review deleteDisLike(int reviewId, int userId) throws ReviewNotFoundException, UserNotFoundException {
+        reviewIdAndUserIdVerification(reviewId, userId);
+
+        String sqlQueryForUpdateUseful = "UPDATE REVIEWS SET USEFUL = USEFUL - (SELECT COUNT(USER_ID) " +
+                "FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ? AND USER_ID = ? AND IS_LIKE = false) WHERE REVIEW_ID = ?";
+        jdbcTemplate.update(sqlQueryForUpdateUseful, reviewId, userId, reviewId);
+
+        String sqlQueryForDeleteDislike = "DELETE FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ? AND USER_ID = ? " +
+                "AND IS_LIKE = false";
+        jdbcTemplate.update(sqlQueryForDeleteDislike, reviewId, userId);
+        log.info("Удален дизлайк от пользователя с userId = {} отзыву с reviewId = {}", userId, reviewId);
+
+        return getReviewById(reviewId);
+    }
+
+    private void deleteUsersByReviewId(int reviewId) {
+        String sqlQueryForDeleteFriends = "DELETE FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ?";
+            jdbcTemplate.update(sqlQueryForDeleteFriends, reviewId);
+
+        log.info("Удалены лайки и дизлайки у отзыва с id = {}", reviewId);
     }
 
     private Map<Boolean, Set<Integer>> getLikes (int reviewId) throws UserNotFoundException {
@@ -150,10 +233,17 @@ public class ReviewDbStorage {
         }
     }
 
-    public void deleteUsersByReviewId(int reviewId) {
-        String sqlQueryForDeleteFriends = "DELETE FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ?";
-            jdbcTemplate.update(sqlQueryForDeleteFriends, reviewId);
+    private void reviewIdAndUserIdVerification(int reviewId, int userId) throws ReviewNotFoundException
+            , UserNotFoundException {
 
-        log.info("Удалены лайки и дизлайки у отзыва с id = {}", reviewId);
+        if (getReviewById(reviewId) == null) {
+            log.error("Отзыв с reviewId = {} не найден.", reviewId);
+            throw new ReviewNotFoundException(String.format("Отзыв с reviewId = %s не найден.", reviewId));
+        }
+        if (userDbStorage.findById(userId).isEmpty()) {
+            log.error("Пользователь с userId = {} отсутствует.", userId);
+            throw new UserNotFoundException(String.format("Пользователь с userId = %s отсутствует."
+                    , userId));
+        }
     }
 }

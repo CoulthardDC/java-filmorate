@@ -28,15 +28,29 @@ public class ReviewService {
         return reviewDbStorage.getAllReviews();
     }
 
-    public Collection<Review> getAllReviewsByFilmId(int filmId, int count) throws UserNotFoundException {
+    public Collection<Review> getAllReviewsByFilmId(int filmId, int count) throws UserNotFoundException
+            , FilmNotFoundException {
         return reviewDbStorage.getAllReviewsByFilmId(filmId, count);
     }
 
     public Review update(Review review) throws ReviewNotFoundException, UserNotFoundException {
         return reviewDbStorage.update(review);
     }
-
-    public Boolean deleteReview(int reviewId) {
+    public Boolean deleteReview(int reviewId) throws ReviewNotFoundException {
         return reviewDbStorage.deleteReview(reviewId);
+    }
+
+    public Review addLike(int reviewId, int userId) throws ReviewNotFoundException, UserNotFoundException {
+        return reviewDbStorage.addLike(reviewId, userId);
+    }
+    public Review addDislike(int reviewId, int userId) throws ReviewNotFoundException, UserNotFoundException {
+        return reviewDbStorage.addDislike(reviewId, userId);
+    }
+    public Review deleteLike(int reviewId, int userId) throws ReviewNotFoundException, UserNotFoundException {
+        return reviewDbStorage.deleteLike(reviewId, userId);
+    }
+
+    public Review deleteDisLike(int reviewId, int userId) throws ReviewNotFoundException, UserNotFoundException {
+        return reviewDbStorage.deleteDisLike(reviewId, userId);
     }
 }

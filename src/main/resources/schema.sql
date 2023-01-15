@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     is_positive BOOLEAN NOT NULL,
     user_id INTEGER REFERENCES users (user_id) ON DELETE RESTRICT,
     film_id INTEGER REFERENCES films (film_id) ON DELETE RESTRICT,
-    useful INTEGER CHECK (useful > 0)
+    useful INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS reviews_likes_dislikes (

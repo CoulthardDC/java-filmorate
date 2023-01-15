@@ -32,7 +32,8 @@ public class Review {
         values.put("is_positive", review.getIsPositive());
         values.put("user_id", review.getUserId());
         values.put("film_id", review.getFilmId());
-        values.put("useful", review.getUseful());
+        values.put("useful", (review.getUseful() == null) ? 0 : review.getUseful());
         return values;
     }
+
 }
