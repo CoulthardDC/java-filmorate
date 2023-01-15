@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.mapper;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -9,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Slf4j
-@AllArgsConstructor
 public class ReviewMapper {
     public static Review mapRowToReview(ResultSet resultSet) throws SQLException {
         return Review.builder()
