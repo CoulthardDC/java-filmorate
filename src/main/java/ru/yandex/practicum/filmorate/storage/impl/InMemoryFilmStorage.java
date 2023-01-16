@@ -48,9 +48,9 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Optional<List<Integer>> findLikesByFilmId(Integer filmId) {
-        if(findById(filmId).isPresent()) {
+        if (findById(filmId).isPresent()) {
             return Optional.of(new ArrayList<>(films.get(filmId).getLikes()));
-        } else{
+        } else {
             return Optional.empty();
         }
     }

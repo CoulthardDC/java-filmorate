@@ -229,7 +229,7 @@ public class FilmDbStorage implements FilmStorage {
     private boolean isFilm(Integer filmId) {
         String sqlRequest = "SELECT count(*) FROM films WHERE film_id = ?";
         Integer result = jdbcTemplate.queryForObject(sqlRequest, Integer.class, filmId);
-        return result != 0;
+        return result != null && result != 0;
     }
 
     private void setAll(List<Film> films) {

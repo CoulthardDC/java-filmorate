@@ -81,6 +81,6 @@ public class DirectorDaoImpl implements DirectorDao {
     private boolean isDirector(Integer id) {
         String sqlRequest = "SELECT count(*) FROM directors WHERE id = ?";
         Integer result = jdbcTemplate.queryForObject(sqlRequest, Integer.class, id);
-        return result != 0;
+        return result != null && result != 0;
     }
 }
