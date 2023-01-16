@@ -70,4 +70,9 @@ public class FilmController {
         filmService.removeLikeFromFilm(filmId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Object> removeFilmById(@PathVariable("id") int filmId) {
+        filmService.removeFilmById(filmId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
 }

@@ -69,9 +69,16 @@ public class UserController {
     }
 
     @DeleteMapping(value = "/{id}/friends/{friendId}")
-    public ResponseEntity<?> removeFromFriends(@PathVariable("id") int userId, @PathVariable int friendId) {
+    public ResponseEntity<Object> removeFromFriends(@PathVariable("id") int userId, @PathVariable int friendId) {
         log.info("Получение запроса к эндпоинту: {} users/{}/friends/{}", "DELETE", userId, friendId);
         userService.removeFriend(userId, friendId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Object> removeUserBuId(@PathVariable("id") int userId) {
+        log.info("Получен запрос к эндпоинту: {} /users/{}", "DELETE", userId);
+        userService.removeUserById(userId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 }
