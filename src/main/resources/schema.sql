@@ -55,3 +55,17 @@ CREATE TABLE IF NOT EXISTS likes (
     CONSTRAINT film_like_fk FOREIGN KEY (film_id) REFERENCES films (film_id),
     CONSTRAINT user_like_fk FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS directors (
+    id INT AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    CONSTRAINT directors_pk PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS film_director (
+    film_id INT,
+    director_id INT,
+    CONSTRAINT film_director_pk PRIMARY KEY (film_id, director_id),
+    CONSTRAINT films_fk FOREIGN KEY (film_id) REFERENCES films (film_id),
+    CONSTRAINT directors_fk FOREIGN KEY (director_id) REFERENCES directors (id) ON DELETE CASCADE
+);

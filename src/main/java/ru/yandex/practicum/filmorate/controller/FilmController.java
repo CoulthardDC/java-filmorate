@@ -70,4 +70,11 @@ public class FilmController {
         filmService.removeLikeFromFilm(filmId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
+
+    @GetMapping(value = "/director/{directorId}")
+    public List<Film> findFilmsByDirectorId (@PathVariable int directorId, @RequestParam String sortBy){
+        log.info("Получен запрос к эндпоинту: {} /films/{}/{}?sortBy={}", "GET", "director", directorId, sortBy);
+        return filmService.findFilmsByDirectorId(directorId, sortBy);
+    }
+
 }

@@ -22,7 +22,8 @@ public class ErrorHandler {
     @ExceptionHandler({FilmNotFoundException.class,
             UserNotFoundException.class,
             GenreNotFoundException.class,
-            MpaNotFoundedException.class}
+            MpaNotFoundedException.class,
+            DirectorNotFoundException.class}
     )
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final InvalidIdException e) {
@@ -38,7 +39,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleInvalidParameterCount(final InvalidParameterCount e) {
+    public ErrorResponse handleInvalidParameterCount(final InvalidParameter e) {
         log.warn(e.getMessage());
         return new ErrorResponse("Ошибка при выполнении программы", e.getMessage());
     }
