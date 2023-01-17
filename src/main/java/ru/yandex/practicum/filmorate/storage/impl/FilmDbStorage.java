@@ -2,23 +2,18 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.mapper.MpaMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import javax.sql.RowSet;
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
