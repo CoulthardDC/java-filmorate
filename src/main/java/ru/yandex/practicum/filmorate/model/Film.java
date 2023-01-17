@@ -30,7 +30,7 @@ public class Film {
     Long duration;
     @NotNull
     Mpa mpa = new Mpa();
-    Set<Review> reviews;
+    Set<Review> reviews = new TreeSet<>();
 
     Set<Integer> likes = new HashSet<>();
     Set<Genre> genres = new HashSet<>();
