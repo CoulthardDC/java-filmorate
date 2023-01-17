@@ -1,13 +1,10 @@
 package ru.yandex.practicum.filmorate.mapper;
 
-import lombok.extern.slf4j.Slf4j;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@Slf4j
 public class ReviewMapper {
     public static Review mapRowToReview(ResultSet resultSet) throws SQLException {
         return Review.builder()
@@ -20,13 +17,7 @@ public class ReviewMapper {
                 .build();
     }
 
-    public static Integer mapRowToUserId(ResultSet resultSet) throws SQLException, UserNotFoundException {
-        int userId =  resultSet.getInt("user_id");
-        if (userId > 0) {
-            return userId;
-        } else {
-            log.error("Пользователь с id = {} не существует.", userId);
-            throw new UserNotFoundException(String.format("Пользователь с id = %s не существует.", userId));
-        }
+    public static Integer mapRowToUserId(ResultSet resultSet) throws SQLException {
+        return resultSet.getInt("user_id");
     }
 }
