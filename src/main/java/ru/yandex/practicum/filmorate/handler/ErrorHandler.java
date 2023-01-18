@@ -26,6 +26,7 @@ public class ErrorHandler {
             UserNotFoundException.class,
             GenreNotFoundException.class,
             MpaNotFoundedException.class,
+            DirectorNotFoundException.class,
             ReviewNotFoundException.class}
     )
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -42,7 +43,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleInvalidParameterCount(final InvalidParameterCount e) {
+    public ErrorResponse handleInvalidParameterCount(final InvalidParameter e) {
         log.warn(e.getMessage());
         return new ErrorResponse("Ошибка при выполнении программы", e.getMessage());
     }

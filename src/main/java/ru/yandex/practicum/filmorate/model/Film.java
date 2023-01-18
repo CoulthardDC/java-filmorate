@@ -15,7 +15,7 @@ import javax.validation.constraints.*;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
-    Integer  id;
+    Integer id;
     @NotBlank()
     String name;
     @Size(max = 200)
@@ -34,6 +34,7 @@ public class Film {
 
     Set<Integer> likes = new HashSet<>();
     Set<Genre> genres = new HashSet<>();
+    Set<Director> directors = new HashSet<>();
 
     public Film(String name, String description, LocalDate releaseDate, long duration) {
         this.name = name;
@@ -48,5 +49,9 @@ public class Film {
 
     public void addGenre(Genre genre) {
         genres.add(genre);
+    }
+
+    public void addDirector(Director director) {
+        directors.add(director);
     }
 }
