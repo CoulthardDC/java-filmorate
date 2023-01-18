@@ -72,6 +72,7 @@ public class FilmController {
     }
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Object> removeFilmById(@PathVariable("id") int filmId) {
+        log.info("Получен запрос к эндпоинту: {} /films/{}", "DELETE", filmId);
         filmService.removeFilmById(filmId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
