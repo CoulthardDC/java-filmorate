@@ -26,7 +26,7 @@ public class ErrorHandler {
             UserNotFoundException.class,
             GenreNotFoundException.class,
             MpaNotFoundedException.class,
-            DirectorNotFoundException.class}
+            DirectorNotFoundException.class,
             ReviewNotFoundException.class}
     )
     @ResponseStatus(HttpStatus.NOT_FOUND)
