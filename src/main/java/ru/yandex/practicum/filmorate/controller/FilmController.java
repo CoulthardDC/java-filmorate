@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -82,6 +83,23 @@ public class FilmController {
     public List<Film> findFilmsByDirectorId(@PathVariable int directorId, @RequestParam String sortBy) {
         log.info("Получен запрос к эндпоинту: {} /films/{}/{}?sortBy={}", "GET", "director", directorId, sortBy);
         return filmService.findFilmsByDirectorId(directorId, sortBy);
+    }
+
+    @GetMapping( "/search")
+    public List<Film> findFilmsBySearch(@RequestParam String query, @RequestParam List<String> by)
+            throws ValidationException {
+        if (query.isEmpty()) {
+            throw new ValidationException("Отсутсвует параметр строки запроса query.");
+        } else if (by.isEmpty()) {
+            throw new ValidationException("Отсутсвует параметр строки запроса by.");
+        } else if (by.size() == 1 & (!by.get(0).equals("title") & !by.get(0).equals("director"))) {
+            throw new ValidationException(String.format("Неправильный параметр строки запроса by = %s.", by.get(0)));
+        } else if ((by.size() == 2) & ((!by.get(0).equals("title") & !by.get(0).equals("director")) &&
+                (!by.get(1).equals("title") & !by.get(1).equals("director")))) {
+            throw new ValidationException(String.format("Неправильные параметры строки запроса by = %s, %s.", by.get(0),
+                    by.get(1)));
+        }
+        return filmService.findFilmsBySearch(query, by);
     }
 
 }

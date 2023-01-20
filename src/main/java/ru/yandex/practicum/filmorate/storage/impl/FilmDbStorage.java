@@ -181,6 +181,33 @@ public class FilmDbStorage implements FilmStorage {
         return result;
     }
 
+    public List<Film> findFilmsBySearch(String query, List<String> by) {
+        if (by.size() == 1 && by.get(0).equals("title")) {
+            by.set(0, "f.name");
+        }
+        if (by.size() == 1) {
+            by.add(1, by.get(0));
+        }
+        if (by.size() == 2 && by.get(1).equals("title")) {
+            by.set(1, "f.name");
+        }
+
+        List<Film> films = new ArrayList<>();
+        if (by.size() == 2) {
+            String sqlQuery = String.format("SELECT f.*,d.*, COUNT(l.user_id) AS rate " +
+                    "FROM films_mpa_view f " +
+                    "LEFT JOIN film_director_directors_view d ON f.film_id = d.film_id " +
+                    "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                    "WHERE REGEXP_LIKE(%s, ?, 'i') OR REGEXP_LIKE(%s, ?, 'i') " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY rate DESC", by.get(0), by.get(1));
+            films = jdbcTemplate.query(sqlQuery, FilmMapper::mapToFilm, query, query);
+        }
+
+        setAll(films);
+        return films;
+    }
+
 
     private void updateGenres(Film film) {
         String sqlRequest = "DELETE from film_genres WHERE film_id = ?";
