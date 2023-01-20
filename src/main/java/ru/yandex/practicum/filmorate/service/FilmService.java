@@ -87,6 +87,12 @@ public class FilmService {
         }
     }
 
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        User user = findUserOrElseThrow(userId);
+        User friend = findUserOrElseThrow(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     private Film findFilmOrElseThrow(Integer filmId) {
         return filmStorage.findById(filmId).orElseThrow(
                 () -> new FilmNotFoundException(filmId)
