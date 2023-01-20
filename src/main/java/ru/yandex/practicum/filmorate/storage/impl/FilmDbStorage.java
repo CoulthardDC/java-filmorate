@@ -191,6 +191,9 @@ public class FilmDbStorage implements FilmStorage {
         if (by.size() == 2 && by.get(1).equals("title")) {
             by.set(1, "f.name");
         }
+        if (by.size() == 2 && by.get(0).equals("title")) {
+            by.set(0, "f.name");
+        }
 
         List<Film> films = new ArrayList<>();
         if (by.size() == 2) {
