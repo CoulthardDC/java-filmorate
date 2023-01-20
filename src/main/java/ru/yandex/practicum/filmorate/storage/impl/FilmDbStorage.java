@@ -196,21 +196,6 @@ public class FilmDbStorage implements FilmStorage {
         return result;
     }
 
-/*    @Override
-    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String sqlRequest =  "SELECT f.film_id, f.name, f.description, f.release_date, " +
-                "f.duration, f.mpa_id, m.name AS mpa_name " +
-                "FROM films f " +
-                "INNER JOIN mpa m on m.mpa_id = f.mpa_id " +
-                "INNER JOIN likes l on f.film_id = l.film_id " +
-                "WHERE l.user_id = ? AND ? " +
-                "GROUP BY (f.film_id) " +
-                "ORDER BY (count(l.user_id)) DESC, f.film_id ";
-        List<Film> result = jdbcTemplate.query(sqlRequest, FilmMapper::mapToFilm, userId, friendId);
-        setAll(result);
-        return result;
-    }*/
-
     private void updateGenres(Film film) {
         String sqlRequest = "DELETE from film_genres WHERE film_id = ?";
         jdbcTemplate.update(sqlRequest, film.getId());
