@@ -183,14 +183,18 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String sqlRequest =  "SELECT f.film_id, f.name, f.description, f.release_date, " +
-                "f.duration, f.mpa_id, m.name AS mpa_name " +
-                "FROM films f " +
-                "INNER JOIN mpa m ON f.mpa_id = m.mpa_id " +
-                "INNER JOIN likes l ON f.film_id = l.film_id " +
-                "WHERE l.user_id = ? AND ? " +
-                "GROUP BY (f.film_id) " +
-                "ORDER BY (count(l.user_id)) DESC, f.film_id";
+        String sqlRequest = "WITH common AS ( SELECT f.film_id " +
+                                             "FROM films f " +
+                                             "INNER JOIN likes l ON f.film_id = l.film_id " +
+                                             "WHERE l.user_id = ? AND ? " +
+                                             "GROUP BY f.film_id)" +
+                "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name, count(l.user_id) AS mpa_name " +
+                "FROM films AS f " +
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "JOIN common AS c ON f.film_id = c.FILM_ID " +
+                "GROUP BY f.film_id " +
+                "ORDER BY mpa_name DESC ";
         List<Film> result = jdbcTemplate.query(sqlRequest, FilmMapper::mapToFilm, userId, friendId);
         setAll(result);
         return result;
