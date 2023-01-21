@@ -17,4 +17,7 @@ public interface FilmStorage {
     void deleteLike(Integer filmId, Integer userId);
     List<Film> getTopFilms(Integer count);
     List<Film> findFilmsByDirectorId(Integer directorId, String sortBy);
+    List<Film> getTopFilmsByGenreAndYear(Integer count, Integer genreId, Integer year);
+    List<Film> getTopFilmsByGenre(Integer count, Integer genreId);
+    List<Film> getTopFilmsByYear(Integer count, Integer year);
 }

@@ -37,10 +37,12 @@ public class FilmController {
     }
 
     @GetMapping(value = "/popular")
-    public List<Film> findTopFilms(@RequestParam(defaultValue = "10") int count) {
-        log.info("Получен запрос к эндпоинту: {} /films/{}?count={}", "GET", "popular", count);
-        return filmService.getTopFilms(count);
-
+    public List<Film> findTopFilms(@RequestParam(defaultValue = "10") int count,
+                                   @RequestParam(defaultValue = "-1") int genreId,
+                                   @RequestParam(defaultValue = "-1") int year) {
+        log.info("Получен запрос к эндпоинту: {} /films/{}?count={}&genreId={}&year={}",
+                "GET", "popular", count, genreId, year);
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)

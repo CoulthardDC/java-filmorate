@@ -181,6 +181,59 @@ public class FilmDbStorage implements FilmStorage {
         return result;
     }
 
+    @Override
+    public List<Film> getTopFilmsByGenre(Integer count, Integer genreId) {
+        String sqlRequest = "SELECT f.film_id, f.name, f.description, f.release_date, " +
+                "f.duration, f.mpa_id, m.name AS mpa_name " +
+                "FROM films AS f " +
+                "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? " +
+                "GROUP BY (f.film_id)" +
+                "ORDER BY (count(l.user_id)) DESC, f.film_id " +
+                "LIMIT ?";
+        List<Film> result = jdbcTemplate.query(sqlRequest,
+                FilmMapper::mapToFilm, genreId, count);
+        setAll(result);
+        return result;
+    }
+
+    @Override
+    public List<Film> getTopFilmsByYear(Integer count, Integer year) {
+        String sqlRequest = "SELECT f.film_id, f.name, f.description, f.release_date, " +
+                "f.duration, f.mpa_id, m.name AS mpa_name " +
+                "FROM films AS f " +
+                "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "WHERE EXTRACT(YEAR FROM f.release_date) = ? " +
+                "GROUP BY (f.film_id)" +
+                "ORDER BY (count(l.user_id)) DESC, f.film_id " +
+                "LIMIT ?";
+        List<Film> result = jdbcTemplate.query(sqlRequest,
+                FilmMapper::mapToFilm, year, count);
+        setAll(result);
+        return result;
+    }
+
+    @Override
+    public List<Film> getTopFilmsByGenreAndYear(Integer count, Integer genreId, Integer year) {
+        String sqlRequest = "SELECT f.film_id, f.name, f.description, f.release_date, " +
+                "f.duration, f.mpa_id, m.name AS mpa_name " +
+                "FROM films AS f " +
+                "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? " +
+                "GROUP BY (f.film_id)" +
+                "ORDER BY (count(l.user_id)) DESC, f.film_id " +
+                "LIMIT ?";
+        List<Film> result = jdbcTemplate.query(sqlRequest,
+                FilmMapper::mapToFilm, genreId, year, count);
+        setAll(result);
+        return result;
+    }
+
 
     private void updateGenres(Film film) {
         String sqlRequest = "DELETE from film_genres WHERE film_id = ?";

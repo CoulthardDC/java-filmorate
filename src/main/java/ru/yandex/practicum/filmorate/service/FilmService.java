@@ -78,12 +78,23 @@ public class FilmService {
         filmStorage.deleteLike(filmId, userId);
     }
 
-    public List<Film> getTopFilms(Integer count) {
+    public List<Film> getTopFilms(Integer count, Integer genreId, Integer year) {
         if (count < 0) {
             log.warn("Невалидное значение параметра count");
             throw new InvalidParameter(String.format("Невалидное значение count: %d", count));
+        }
+        if (genreId < 0) {
+            if (year < 0) {
+                return filmStorage.getTopFilms(count);
+            } else {
+                return filmStorage.getTopFilmsByYear(count, year);
+            }
         } else {
-            return filmStorage.getTopFilms(count);
+            if (year < 0) {
+                return filmStorage.getTopFilmsByGenre(count, genreId);
+            } else {
+                return filmStorage.getTopFilmsByGenreAndYear(count, genreId, year);
+            }
         }
     }
 
