@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -45,6 +46,12 @@ public class UserController {
     public List<User> findCommonFriends(@PathVariable("id") int userId, @PathVariable int otherId) {
         log.info("Получен запрос к эндпоинту: {} /users/{}/friends/common/{}", "GET", userId, otherId);
         return userService.getCommonFriends(userId, otherId);
+    }
+
+    @GetMapping(value = "/{id}/feed")
+    public List<Feed> findFeedsByUserId(@PathVariable("id") int userId) {
+        log.info("Получен запрос к эндпоинту: {} /users/{}/feeds", "GET", userId);
+        return userService.getFeeds(userId);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)

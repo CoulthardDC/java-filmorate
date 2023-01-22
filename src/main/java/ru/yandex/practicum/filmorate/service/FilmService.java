@@ -8,10 +8,9 @@ import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.InvalidParameter;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.DirectorDao;
+import ru.yandex.practicum.filmorate.storage.FeedDao;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -23,14 +22,17 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final DirectorDao directorDao;
+    private final FeedDao feedDao;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
-                       DirectorDao directorDao) {
+                       DirectorDao directorDao,
+                       FeedDao feedDao) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.directorDao = directorDao;
+        this.feedDao = feedDao;
     }
 
     public List<Film> getAllFilms() {
@@ -70,12 +72,14 @@ public class FilmService {
         Film film = findFilmOrElseThrow(filmId);
         User user = findUserOrElseThrow(userId);
         filmStorage.addLike(filmId, userId);
+        feedDao.addFeed(userId, Event.LIKE, Operation.ADD, filmId);
     }
 
     public void removeLikeFromFilm(Integer filmId, Integer userId) {
         Film film = findFilmOrElseThrow(filmId);
         User user = findUserOrElseThrow(userId);
         filmStorage.deleteLike(filmId, userId);
+        feedDao.addFeed(userId, Event.LIKE, Operation.REMOVE, filmId);
     }
 
     public List<Film> getTopFilms(Integer count) {

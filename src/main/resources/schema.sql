@@ -85,3 +85,14 @@ CREATE TABLE IF NOT EXISTS reviews_likes_dislikes (
     is_like BOOLEAN,
     PRIMARY KEY (review_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS feeds (
+    event_id INTEGER AUTO_INCREMENT,
+    user_id INTEGER NOT NULL,
+    time TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+    event_type VARCHAR(50) NOT NULL,
+    operation VARCHAR(50) NOT NULL,
+    entity_id INTEGER,
+    CONSTRAINT feeds_pk PRIMARY KEY(event_id),
+    CONSTRAINT feeds_fk FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+);
