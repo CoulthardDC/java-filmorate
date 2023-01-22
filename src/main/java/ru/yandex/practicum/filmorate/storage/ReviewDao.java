@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -11,8 +12,6 @@ import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.impl.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.impl.UserDbStorage;
 
 import java.sql.PreparedStatement;
 import java.util.*;
@@ -21,13 +20,13 @@ import java.util.*;
 @Slf4j
 public class ReviewDao {
     private final JdbcTemplate jdbcTemplate;
-    private final UserDbStorage userDbStorage;
-    private final FilmDbStorage filmDbStorage;
+    private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
-    public ReviewDao(JdbcTemplate jdbcTemplate) {
+    public ReviewDao(JdbcTemplate jdbcTemplate, @Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.jdbcTemplate = jdbcTemplate;
-        this.userDbStorage = new UserDbStorage(jdbcTemplate);
-        this.filmDbStorage = new FilmDbStorage(jdbcTemplate);
+        this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
     }
 
     public Review create(Review review) throws ValidationException, FilmNotFoundException, UserNotFoundException,
@@ -166,6 +165,7 @@ public class ReviewDao {
 
         return getReviewById(reviewId);
     }
+
     public Review deleteDisLike(int reviewId, int userId) throws ReviewNotFoundException, UserNotFoundException {
         getReviewById(reviewId);
         userChecker(userId);
@@ -184,12 +184,12 @@ public class ReviewDao {
 
     private void deleteUsersByReviewId(int reviewId) {
         String sqlQueryForDeleteFriends = "DELETE FROM REVIEWS_LIKES_DISLIKES WHERE REVIEW_ID = ?";
-            jdbcTemplate.update(sqlQueryForDeleteFriends, reviewId);
+        jdbcTemplate.update(sqlQueryForDeleteFriends, reviewId);
 
         log.info("Удалены лайки и дизлайки у отзыва с id = {}", reviewId);
     }
 
-    private Map<Boolean, Set<Integer>> getLikes (int reviewId) throws UserNotFoundException {
+    private Map<Boolean, Set<Integer>> getLikes(int reviewId) throws UserNotFoundException {
 
         Map<Boolean, Set<Integer>> likes = new TreeMap<>();
 
@@ -217,18 +217,19 @@ public class ReviewDao {
             throw new ValidationException("Отсутствует filmId.");
         }
 
-        if (filmDbStorage.findById(filmId).isEmpty()) {
+        if (filmStorage.findById(filmId).isEmpty()) {
             log.error("Фильм с filmId = {} отсутствует.", filmId);
             throw new FilmNotFoundException(String.format("Фильм с filmId = %s отсутствует.", filmId));
         }
     }
+
     private void userChecker(int userId) throws UserNotFoundException {
         if (userId == 0) {
             log.error("Отсутствует userId.");
             throw new ValidationException("Отсутствует userId.");
         }
 
-        if (userDbStorage.findById(userId).isEmpty()) {
+        if (userStorage.findById(userId).isEmpty()) {
             log.error("Пользователь с userId = {} отсутствует.", userId);
             throw new UserNotFoundException(String.format("Пользователь с userId = %s отсутствует.", userId));
         }
