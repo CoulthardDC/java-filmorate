@@ -5,14 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,6 +72,11 @@ public class UserService {
 
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
         return userStorage.getCommonFriends(userId, otherId);
+    }
+
+    public List<Film> findRecommendations(Integer userId) {
+        findUserOrElseThrow(userId);
+        return userStorage.findRecommendations(userId);
     }
 
     private User findUserOrElseThrow(Integer userId) {
