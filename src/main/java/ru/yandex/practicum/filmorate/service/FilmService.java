@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -85,6 +86,12 @@ public class FilmService {
         } else {
             return filmStorage.getTopFilms(count);
         }
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        User user = findUserOrElseThrow(userId);
+        User friend = findUserOrElseThrow(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     private Film findFilmOrElseThrow(Integer filmId) {
