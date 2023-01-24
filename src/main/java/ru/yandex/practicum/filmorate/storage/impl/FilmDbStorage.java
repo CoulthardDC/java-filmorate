@@ -184,6 +184,59 @@ public class FilmDbStorage implements FilmStorage {
         setAll(result);
         return result;
     }
+    
+    public List<Film> findFilmsBySearch(String query, List<String> by) {
+        String parameterByTitle = "title";
+        String parameterFilmName = "f.name";
+
+        if (by.size() == 1 && by.get(0).equals(parameterByTitle)) {
+            by.set(0, parameterFilmName);
+        }
+        if (by.size() == 1) {
+            by.add(1, by.get(0));
+        }
+        if (by.size() == 2 && by.get(1).equals(parameterByTitle)) {
+            by.set(1, parameterFilmName);
+        }
+        if (by.size() == 2 && by.get(0).equals(parameterByTitle)) {
+            by.set(0, parameterFilmName);
+        }
+
+        List<Film> films = new ArrayList<>();
+        if (by.size() == 2) {
+            String sqlQuery = String.format("SELECT f.*,d.*, COUNT(l.user_id) AS rate " +
+                    "FROM films_mpa_view f " +
+                    "LEFT JOIN film_director_directors_view d ON f.film_id = d.film_id " +
+                    "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                    "WHERE REGEXP_LIKE(%s, ?, 'i') OR REGEXP_LIKE(%s, ?, 'i') " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY rate DESC", by.get(0), by.get(1));
+            films = jdbcTemplate.query(sqlQuery, FilmMapper::mapToFilm, query, query);
+        }
+
+        setAll(films);
+        return films;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        String sqlRequest = "WITH common AS ( SELECT f.film_id, count(l.user_id)" +
+                                             "FROM films f " +
+                                             "INNER JOIN likes l ON f.film_id = l.film_id " +
+                                             "WHERE l.user_id = ? AND ? " +
+                                             "GROUP BY f.film_id)" +
+                "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
+                "FROM films AS f " +
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "JOIN common AS c ON f.film_id = c.FILM_ID " +
+                "GROUP BY f.film_id " +
+                "ORDER BY mpa_name DESC ";
+        List<Film> result = jdbcTemplate.query(sqlRequest, FilmMapper::mapToFilm, userId, friendId);
+        setAll(result);
+        return result;
+    }
+
 
     private void updateGenres(Film film) {
         String sqlRequest = "DELETE from film_genres WHERE film_id = ?";

@@ -4,10 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.InvalidParameter;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -18,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -106,6 +104,12 @@ public class FilmService {
         return filmStorage.getTopFilms(sqlIn, params);
     }
 
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        User user = findUserOrElseThrow(userId);
+        User friend = findUserOrElseThrow(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     private Film findFilmOrElseThrow(Integer filmId) {
         return filmStorage.findById(filmId).orElseThrow(
                 () -> new FilmNotFoundException(filmId)
@@ -122,5 +126,9 @@ public class FilmService {
         return directorDao.findById(directorId).orElseThrow(
                 () -> new DirectorNotFoundException(directorId)
         );
+    }
+
+    public List<Film> findFilmsBySearch(String query, List<String> by) {
+        return filmStorage.findFilmsBySearch(query, by);
     }
 }
