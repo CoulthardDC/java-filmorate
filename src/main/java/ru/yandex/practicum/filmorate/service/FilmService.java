@@ -12,9 +12,7 @@ import ru.yandex.practicum.filmorate.storage.DirectorDao;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,25 +81,13 @@ public class FilmService {
             log.warn("Невалидное значение параметра count");
             throw new InvalidParameter(String.format("Невалидное значение count: %d", count));
         }
-        String sqlIn = "";
-        List<Integer> params = new ArrayList<>();
-        if (genreId < 0) {
-            if (year > 0) {
-                sqlIn = "WHERE EXTRACT(YEAR FROM f.release_date) = ? ";
-                params.add(year);
-            }
-        } else {
-            if (year < 0) {
-                sqlIn = "WHERE fg.genre_id = ? ";
-                params.add(genreId);
-            } else {
-                sqlIn = "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ";
-                params.add(genreId);
-                params.add(year);
-            }
-        }
-        params.add(count);
-        return filmStorage.getTopFilms(sqlIn, params);
+
+        Map<String, Integer> params = new LinkedHashMap<>();
+        params.put("genreId", genreId);
+        params.put("year", year);
+        params.put("count", count);
+
+        return filmStorage.getTopFilms(params);
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {

@@ -66,7 +66,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getTopFilms(String sqlIn, List<Integer> params) {
+    public List<Film> getTopFilms(Map<String, Integer> params) {
         return null;
     }
 
