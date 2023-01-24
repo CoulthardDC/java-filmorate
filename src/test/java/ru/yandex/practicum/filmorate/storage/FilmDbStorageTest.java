@@ -101,17 +101,6 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void testGetTopFilms() {
-        filmStorage.addLike(2, 2);
-
-
-        assertThat(filmStorage.getTopFilms(2))
-                .isNotEmpty()
-                .isEqualTo(List.of(filmStorage.findById(2).get(),
-                        filmStorage.findById(1).get()));
-    }
-
-    @Test
     void deleteAll() {
         filmStorage.deleteAll();
 

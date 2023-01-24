@@ -12,7 +12,7 @@ import ru.yandex.practicum.filmorate.storage.DirectorDao;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,13 +76,18 @@ public class FilmService {
         filmStorage.deleteLike(filmId, userId);
     }
 
-    public List<Film> getTopFilms(Integer count) {
+    public List<Film> getTopFilms(Integer count, Integer genreId, Integer year) {
         if (count < 0) {
             log.warn("Невалидное значение параметра count");
             throw new InvalidParameter(String.format("Невалидное значение count: %d", count));
-        } else {
-            return filmStorage.getTopFilms(count);
         }
+
+        Map<String, Integer> params = new LinkedHashMap<>();
+        params.put("genreId", genreId);
+        params.put("year", year);
+        params.put("count", count);
+
+        return filmStorage.getTopFilms(params);
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {

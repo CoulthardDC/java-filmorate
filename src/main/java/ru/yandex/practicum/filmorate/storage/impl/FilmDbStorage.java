@@ -167,16 +167,34 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getTopFilms(Integer count) {
+    public List<Film> getTopFilms(Map<String, Integer> params) {
+        String sqlIn = "";
+        if (params.get("genreId") > 0 && params.get("year") > 0) {
+            sqlIn = "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ";
+        } else if (params.get("year") > 0) {
+            sqlIn = "WHERE EXTRACT(YEAR FROM f.release_date) = ? ";
+            params.remove("genreId");
+        } else if (params.get("genreId") > 0){
+            sqlIn = "WHERE fg.genre_id = ? ";
+            params.remove("year");
+        } else {
+            params.remove("genreId");
+            params.remove("year");
+        }
+
         String sqlRequest = "SELECT f.film_id, f.name, f.description, f.release_date, " +
                 "f.duration, f.mpa_id, m.name AS mpa_name " +
                 "FROM films f " +
                 "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "%s" +
                 "GROUP BY (f.film_id)" +
                 "ORDER BY (count(l.user_id)) DESC, f.film_id " +
                 "LIMIT ?";
-        List<Film> result = jdbcTemplate.query(sqlRequest, FilmMapper::mapToFilm, count);
+        List<Film> result = jdbcTemplate.query(String.format(sqlRequest, sqlIn),
+                FilmMapper::mapToFilm, params.values().toArray());
+
         setAll(result);
         return result;
     }
@@ -232,6 +250,7 @@ public class FilmDbStorage implements FilmStorage {
         setAll(result);
         return result;
     }
+
 
     private void updateGenres(Film film) {
         String sqlRequest = "DELETE from film_genres WHERE film_id = ?";
