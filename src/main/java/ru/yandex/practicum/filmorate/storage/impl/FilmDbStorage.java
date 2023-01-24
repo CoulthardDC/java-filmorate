@@ -182,17 +182,20 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public List<Film> findFilmsBySearch(String query, List<String> by) {
-        if (by.size() == 1 && by.get(0).equals("title")) {
-            by.set(0, "f.name");
+        String parameterByTitle = "title";
+        String parameterFilmName = "f.name";
+
+        if (by.size() == 1 && by.get(0).equals(parameterByTitle)) {
+            by.set(0, parameterFilmName);
         }
         if (by.size() == 1) {
             by.add(1, by.get(0));
         }
-        if (by.size() == 2 && by.get(1).equals("title")) {
-            by.set(1, "f.name");
+        if (by.size() == 2 && by.get(1).equals(parameterByTitle)) {
+            by.set(1, parameterFilmName);
         }
-        if (by.size() == 2 && by.get(0).equals("title")) {
-            by.set(0, "f.name");
+        if (by.size() == 2 && by.get(0).equals(parameterByTitle)) {
+            by.set(0, parameterFilmName);
         }
 
         List<Film> films = new ArrayList<>();
