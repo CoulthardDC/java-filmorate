@@ -66,22 +66,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getTopFilms(Integer count) {
+    public List<Film> getTopFilms(String sqlIn, List<Integer> params) {
         return null;
     }
-    @Override
-    public List<Film> getTopFilmsByGenre(Integer count, Integer genreId) {
-        return null;
-    }
-    @Override
-    public List<Film> getTopFilmsByYear(Integer count, Integer year) {
-        return null;
-    }
-    @Override
-    public List<Film> getTopFilmsByGenreAndYear(Integer count, Integer genreId, Integer year) {
-        return null;
-    }
-
 
     @Override
     public List<Film> findFilmsByDirectorId(Integer directorId, String sortBy) {

@@ -15,9 +15,6 @@ public interface FilmStorage {
     Optional<List<Integer>> findLikesByFilmId(Integer filmId);
     void addLike(Integer filmId, Integer userId);
     void deleteLike(Integer filmId, Integer userId);
-    List<Film> getTopFilms(Integer count);
+    List<Film> getTopFilms(String sqlIn, List<Integer> params);
     List<Film> findFilmsByDirectorId(Integer directorId, String sortBy);
-    List<Film> getTopFilmsByGenreAndYear(Integer count, Integer genreId, Integer year);
-    List<Film> getTopFilmsByGenre(Integer count, Integer genreId);
-    List<Film> getTopFilmsByYear(Integer count, Integer year);
 }

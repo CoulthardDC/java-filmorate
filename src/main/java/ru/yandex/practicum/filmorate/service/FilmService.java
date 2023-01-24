@@ -15,6 +15,8 @@ import ru.yandex.practicum.filmorate.storage.DirectorDao;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -83,19 +85,25 @@ public class FilmService {
             log.warn("Невалидное значение параметра count");
             throw new InvalidParameter(String.format("Невалидное значение count: %d", count));
         }
+        String sqlIn = "";
+        List<Integer> params = new ArrayList<>();
         if (genreId < 0) {
-            if (year < 0) {
-                return filmStorage.getTopFilms(count);
-            } else {
-                return filmStorage.getTopFilmsByYear(count, year);
+            if (year > 0) {
+                sqlIn = "WHERE EXTRACT(YEAR FROM f.release_date) = ? ";
+                params.add(year);
             }
         } else {
             if (year < 0) {
-                return filmStorage.getTopFilmsByGenre(count, genreId);
+                sqlIn = "WHERE fg.genre_id = ? ";
+                params.add(genreId);
             } else {
-                return filmStorage.getTopFilmsByGenreAndYear(count, genreId, year);
+                sqlIn = "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ";
+                params.add(genreId);
+                params.add(year);
             }
         }
+        params.add(count);
+        return filmStorage.getTopFilms(sqlIn, params);
     }
 
     private Film findFilmOrElseThrow(Integer filmId) {
