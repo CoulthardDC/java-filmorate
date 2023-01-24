@@ -2,14 +2,17 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
@@ -84,4 +87,29 @@ public class FilmController {
         return filmService.findFilmsByDirectorId(directorId, sortBy);
     }
 
+    @GetMapping( "/search")
+    public List<Film> findFilmsBySearch(@RequestParam String query, @RequestParam List<String> by)
+            throws ValidationException {
+        String parameterByTitle = "title";
+        String parameterByDirector = "director";
+
+        if (query.isEmpty()) {
+            throw new ValidationException("Отсутсвует параметр строки запроса query.");
+        } else if (by.isEmpty()) {
+            throw new ValidationException("Отсутсвует параметр строки запроса by.");
+        } else if (by.size() == 1 && (!by.get(0).equals(parameterByTitle) && !by.get(0).equals(parameterByDirector))) {
+            throw new ValidationException(String.format("Неправильный параметр строки запроса by = %s.", by.get(0)));
+        } else if ((by.size() == 2) && ((!by.get(0).equals(parameterByTitle) && !by.get(0).equals(parameterByDirector))
+                && (!by.get(1).equals(parameterByTitle) && !by.get(1).equals(parameterByDirector)))) {
+            throw new ValidationException(String.format("Неправильные параметры строки запроса by = %s, %s.", by.get(0),
+                    by.get(1)));
+        }
+        return filmService.findFilmsBySearch(query, by);
+    }
+
+    @GetMapping(value = "/common")
+    public List<Film> findCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        log.info("Получен запрос к эндпоинту: {} /common{}/{}", "GET", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }

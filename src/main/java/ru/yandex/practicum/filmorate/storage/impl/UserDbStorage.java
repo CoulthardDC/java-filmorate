@@ -1,11 +1,16 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.mapper.LikeExtractor;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.Date;
@@ -16,9 +21,11 @@ import java.util.stream.Collectors;
 @Component("userDbStorage")
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FilmStorage filmStorage;
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
+    public UserDbStorage(JdbcTemplate jdbcTemplate, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.jdbcTemplate = jdbcTemplate;
+        this.filmStorage = filmStorage;
     }
 
     @Override
@@ -47,7 +54,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> findAll() {
         String sqlRequest = "SELECT * FROM users";
-        List<User> result =jdbcTemplate.query(sqlRequest, UserMapper::mapToUser);
+        List<User> result = jdbcTemplate.query(sqlRequest, UserMapper::mapToUser);
         setFriends(result);
         return result;
     }
@@ -84,7 +91,7 @@ public class UserDbStorage implements UserStorage {
                 stmt.setDate(4, Date.valueOf(user.getBirthday()));
                 return stmt;
             }, keyHolder);
-             user.setId(keyHolder.getKey().intValue());
+            user.setId(keyHolder.getKey().intValue());
         } else {
             if (isUser(user.getId())) {
                 String sqlRequest = "UPDATE users SET " +
@@ -100,6 +107,7 @@ public class UserDbStorage implements UserStorage {
         }
         return user;
     }
+
     @Override
     public Optional<List<Integer>> findFriendsByUserId(Integer userId) {
         if (isUser(userId)) {
@@ -145,6 +153,46 @@ public class UserDbStorage implements UserStorage {
             return new ArrayList<>();
         }
     }
+
+    @Override
+    public List<Film> findRecommendations(Integer userId) {
+        String sqlRequest = "SELECT user_id, film_id " +
+                "FROM likes;";
+        Map<Integer, Set<Integer>> allUsersLikes = jdbcTemplate.query(sqlRequest, new LikeExtractor());
+
+        Set<Integer> userLikes = null;
+        if (allUsersLikes != null) {
+            userLikes = allUsersLikes.get(userId);
+        }
+        if (userLikes == null || userLikes.isEmpty()) {
+            return new ArrayList<>();
+        }
+        allUsersLikes.remove(userId);
+
+        Set<Integer> recommendedFilmIds = getRecommendedFilmIds(allUsersLikes, userLikes);
+
+        return recommendedFilmIds.stream()
+                .map(id -> filmStorage.findById(id).orElseThrow(() -> new FilmNotFoundException(id)))
+                .collect(Collectors.toList());
+    }
+
+    private Set<Integer> getRecommendedFilmIds(Map<Integer, Set<Integer>> allUsersLikes, Set<Integer> userLikes) {
+        int maxCommonCount = 0;
+        Set<Integer> recommendedFilmIds = new HashSet<>();
+        for (Map.Entry<Integer, Set<Integer>> entry : allUsersLikes.entrySet()) {
+            Set<Integer> common = new HashSet<>(userLikes);
+            Set<Integer> filmIds = entry.getValue();
+            common.retainAll(filmIds);
+
+            if (common.size() > maxCommonCount) {
+                maxCommonCount = common.size();
+                filmIds.removeAll(common);
+                recommendedFilmIds = filmIds;
+            }
+        }
+        return recommendedFilmIds;
+    }
+
     private void setFriends(List<User> users) {
         List<Integer> usersId = users
                 .stream()
@@ -162,9 +210,9 @@ public class UserDbStorage implements UserStorage {
             userMap.get(rs.getInt("from_user_id"))
                     .addFriend(rs.getInt("to_user_id"));
             }, usersId.toArray());
-    };
+    }
 
-    private boolean isUser (Integer userId) {
+    private boolean isUser(Integer userId) {
         String sqlRequest = "SELECT count(*) FROM users WHERE user_id = ?";
         Integer result = jdbcTemplate.queryForObject(sqlRequest, Integer.class, userId);
         return result != 0;

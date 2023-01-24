@@ -96,3 +96,21 @@ CREATE TABLE IF NOT EXISTS feeds (
     CONSTRAINT feeds_pk PRIMARY KEY(event_id),
     CONSTRAINT feeds_fk FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
+
+CREATE OR REPLACE VIEW films_mpa_view AS
+SELECT f.film_id,
+       f.name,
+       f.description,
+       f.release_date,
+       f.duration,
+       f.mpa_id,
+       m.name AS mpa_name
+FROM films f
+LEFT OUTER JOIN mpa m ON f.mpa_id = m.mpa_id;
+
+CREATE OR REPLACE VIEW film_director_directors_view AS
+SELECT fd.film_id,
+       fd.director_id,
+       d.name AS director
+FROM film_director fd
+LEFT OUTER JOIN directors d ON fd.director_id = d.id;
