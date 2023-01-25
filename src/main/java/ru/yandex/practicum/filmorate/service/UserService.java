@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FeedDao;
-import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
@@ -40,14 +39,14 @@ public class UserService {
         return findUserOrElseThrow(id);
     }
 
-    public User addUser(User user) {
-        return userStorage.save(user);
+    public void addUser(User user) {
+        userStorage.save(user);
     }
 
-    public User updateUserById(User user) {
+    public void updateUserById(User user) {
         Integer id = user.getId();
         findUserOrElseThrow(id);
-        return userStorage.save(user);
+        userStorage.save(user);
     }
 
     public void removeUserById(Integer id) {
@@ -57,21 +56,21 @@ public class UserService {
 
 
     public void addToFriend(Integer userId, Integer friendId) {
-        User user = findUserOrElseThrow(userId);
-        User friend = findUserOrElseThrow(friendId);
+        findUserOrElseThrow(userId);
+        findUserOrElseThrow(friendId);
         userStorage.addFriend(userId, friendId);
         feedDao.addFeed(userId, Event.FRIEND, Operation.ADD, friendId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        User user = findUserOrElseThrow(userId);
-        User friend = findUserOrElseThrow(friendId);
+        findUserOrElseThrow(userId);
+        findUserOrElseThrow(friendId);
         userStorage.deleteFriend(userId, friendId);
         feedDao.addFeed(userId, Event.FRIEND, Operation.REMOVE, friendId);
     }
 
     public List<User> getUserFriend(Integer userId) {
-        User user = findUserOrElseThrow(userId);
+        findUserOrElseThrow(userId);
         return userStorage.findFriendsByUserId(userId)
                 .orElse(new ArrayList<>())
                 .stream()

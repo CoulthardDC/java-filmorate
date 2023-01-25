@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -57,31 +59,31 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(Integer filmId, Integer userId) {
-
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
     public void deleteLike(Integer filmId, Integer userId) {
-
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
     public List<Film> getTopFilms(Map<String, Integer> params) {
-        return null;
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
     public List<Film> findFilmsByDirectorId(Integer directorId, String sortBy) {
-        return null;
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
     public List<Film> findFilmsBySearch(String query, List<String> by) {
-        return null;
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
     
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        return null;
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 }

@@ -14,7 +14,6 @@ import java.util.Objects;
 @RestControllerAdvice("ru.yandex.practicum.filmorate.controller")
 @Slf4j
 public class ErrorHandler {
-
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(final ValidationException e) {
@@ -34,6 +33,7 @@ public class ErrorHandler {
         log.warn(e.getMessage());
         return new ErrorResponse("Ресурс не найден", e.getMessage());
     }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleInvalidIdException(final InvalidIdException e) {

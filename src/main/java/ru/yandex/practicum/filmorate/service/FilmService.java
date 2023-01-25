@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -41,15 +40,14 @@ public class FilmService {
         return findFilmOrElseThrow(id);
     }
 
-    public Film addFilm(Film film) {
-        return filmStorage.save(film);
+    public void addFilm(Film film) {
+        filmStorage.save(film);
     }
 
-    public Film updateFilmById(Film film) {
+    public void updateFilmById(Film film) {
         Integer id = film.getId();
         findFilmOrElseThrow(id);
         filmStorage.save(film);
-        return film;
     }
 
     public List<Film> findFilmsByDirectorId(Integer directorId, String sortBy) {
@@ -67,15 +65,15 @@ public class FilmService {
     }
 
     public void addLikeToFilm(Integer filmId, Integer userId) {
-        Film film = findFilmOrElseThrow(filmId);
-        User user = findUserOrElseThrow(userId);
+        findFilmOrElseThrow(filmId);
+        findUserOrElseThrow(userId);
         filmStorage.addLike(filmId, userId);
         feedDao.addFeed(userId, Event.LIKE, Operation.ADD, filmId);
     }
 
     public void removeLikeFromFilm(Integer filmId, Integer userId) {
-        Film film = findFilmOrElseThrow(filmId);
-        User user = findUserOrElseThrow(userId);
+        findFilmOrElseThrow(filmId);
+        findUserOrElseThrow(userId);
         filmStorage.deleteLike(filmId, userId);
         feedDao.addFeed(userId, Event.LIKE, Operation.REMOVE, filmId);
     }
@@ -95,8 +93,8 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        User user = findUserOrElseThrow(userId);
-        User friend = findUserOrElseThrow(friendId);
+        findUserOrElseThrow(userId);
+        findUserOrElseThrow(friendId);
         return filmStorage.getCommonFilms(userId, friendId);
     }
 
@@ -106,14 +104,14 @@ public class FilmService {
         );
     }
 
-    private User findUserOrElseThrow(Integer userId) {
-        return userStorage.findById(userId).orElseThrow(
+    private void findUserOrElseThrow(Integer userId) {
+        userStorage.findById(userId).orElseThrow(
                 () -> new UserNotFoundException(userId)
         );
     }
 
-    private Director findDirectorOrElseThrow(Integer directorId) {
-        return directorDao.findById(directorId).orElseThrow(
+    private void findDirectorOrElseThrow(Integer directorId) {
+        directorDao.findById(directorId).orElseThrow(
                 () -> new DirectorNotFoundException(directorId)
         );
     }

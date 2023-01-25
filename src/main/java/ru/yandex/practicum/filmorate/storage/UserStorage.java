@@ -9,8 +9,6 @@ import java.util.Optional;
 public interface UserStorage {
     Integer count();
 
-    void deleteAll();
-
     void deleteById(Integer id);
 
     List<User> findAll();
