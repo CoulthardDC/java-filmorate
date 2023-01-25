@@ -5,8 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FeedDao;
+import ru.yandex.practicum.filmorate.storage.impl.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
@@ -18,10 +23,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
     private final UserStorage userStorage;
+    private final FeedDao feedDao;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       FeedDao feedDao) {
         this.userStorage = userStorage;
+        this.feedDao = feedDao;
     }
 
     public List<User> getAllUsers() {
@@ -52,12 +60,14 @@ public class UserService {
         User user = findUserOrElseThrow(userId);
         User friend = findUserOrElseThrow(friendId);
         userStorage.addFriend(userId, friendId);
+        feedDao.addFeed(userId, Event.FRIEND, Operation.ADD, friendId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
         User user = findUserOrElseThrow(userId);
         User friend = findUserOrElseThrow(friendId);
         userStorage.deleteFriend(userId, friendId);
+        feedDao.addFeed(userId, Event.FRIEND, Operation.REMOVE, friendId);
     }
 
     public List<User> getUserFriend(Integer userId) {
@@ -68,6 +78,11 @@ public class UserService {
                 .map(userStorage::findById)
                 .map(Optional::get)
                 .collect(Collectors.toList());
+    }
+
+    public List<Feed> getFeeds(Integer userId) {
+        findUserOrElseThrow(userId);
+        return feedDao.getFeeds(userId);
     }
 
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
