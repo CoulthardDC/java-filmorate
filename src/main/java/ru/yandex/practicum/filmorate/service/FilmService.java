@@ -114,6 +114,20 @@ public class FilmService {
     }
 
     public List<Film> findFilmsBySearch(String query, List<String> by) {
+        String parameterByTitle = "title";
+        String parameterByDirector = "director";
+
+        if (query.isEmpty()) {
+            throw new ValidationException("Отсутсвует параметр строки запроса query.");
+        } else if (by.isEmpty()) {
+            throw new ValidationException("Отсутсвует параметр строки запроса by.");
+        } else if (by.size() == 1 && (!by.get(0).equals(parameterByTitle) && !by.get(0).equals(parameterByDirector))) {
+            throw new ValidationException(String.format("Неправильный параметр строки запроса by = %s.", by.get(0)));
+        } else if ((by.size() == 2) && ((!by.get(0).equals(parameterByTitle) && !by.get(0).equals(parameterByDirector))
+                && (!by.get(1).equals(parameterByTitle) && !by.get(1).equals(parameterByDirector)))) {
+            throw new ValidationException(String.format("Неправильные параметры строки запроса by = %s, %s.", by.get(0),
+                    by.get(1)));
+        }
         return filmDao.findFilmsBySearch(query, by);
     }
 }
