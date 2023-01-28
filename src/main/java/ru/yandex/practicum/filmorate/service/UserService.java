@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FeedDao;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.UserDao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,18 +21,18 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class UserService {
-    private final UserStorage userStorage;
+    private final UserDao userDao;
     private final FeedDao feedDao;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+    public UserService(@Qualifier("userDbDaoImpl") UserDao userDao,
                        FeedDao feedDao) {
-        this.userStorage = userStorage;
+        this.userDao = userDao;
         this.feedDao = feedDao;
     }
 
     public List<User> getAllUsers() {
-        return userStorage.findAll();
+        return userDao.findAll();
     }
 
     public User getUserById(Integer id) {
@@ -40,41 +40,41 @@ public class UserService {
     }
 
     public void addUser(User user) {
-        userStorage.save(user);
+        userDao.save(user);
     }
 
     public void updateUserById(User user) {
         Integer id = user.getId();
         findUserOrElseThrow(id);
-        userStorage.save(user);
+        userDao.save(user);
     }
 
     public void removeUserById(Integer id) {
         findUserOrElseThrow(id);
-        userStorage.deleteById(id);
+        userDao.deleteById(id);
     }
 
 
     public void addToFriend(Integer userId, Integer friendId) {
         findUserOrElseThrow(userId);
         findUserOrElseThrow(friendId);
-        userStorage.addFriend(userId, friendId);
+        userDao.addFriend(userId, friendId);
         feedDao.addFeed(userId, Event.FRIEND, Operation.ADD, friendId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
         findUserOrElseThrow(userId);
         findUserOrElseThrow(friendId);
-        userStorage.deleteFriend(userId, friendId);
+        userDao.deleteFriend(userId, friendId);
         feedDao.addFeed(userId, Event.FRIEND, Operation.REMOVE, friendId);
     }
 
     public List<User> getUserFriend(Integer userId) {
         findUserOrElseThrow(userId);
-        return userStorage.findFriendsByUserId(userId)
+        return userDao.findFriendsByUserId(userId)
                 .orElse(new ArrayList<>())
                 .stream()
-                .map(userStorage::findById)
+                .map(userDao::findById)
                 .map(Optional::get)
                 .collect(Collectors.toList());
     }
@@ -85,16 +85,16 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
-        return userStorage.getCommonFriends(userId, otherId);
+        return userDao.getCommonFriends(userId, otherId);
     }
 
     public List<Film> findRecommendations(Integer userId) {
         findUserOrElseThrow(userId);
-        return userStorage.findRecommendations(userId);
+        return userDao.findRecommendations(userId);
     }
 
     private User findUserOrElseThrow(Integer userId) {
-        return userStorage.findById(userId).orElseThrow(
+        return userDao.findById(userId).orElseThrow(
                 () -> new UserNotFoundException(userId));
     }
 }

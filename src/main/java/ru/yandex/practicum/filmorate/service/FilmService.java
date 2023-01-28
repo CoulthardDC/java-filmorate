@@ -8,32 +8,32 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.DirectorDao;
 import ru.yandex.practicum.filmorate.storage.FeedDao;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.FilmDao;
+import ru.yandex.practicum.filmorate.storage.UserDao;
 
 import java.util.*;
 
 @Service
 @Slf4j
 public class FilmService {
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final FilmDao filmDao;
+    private final UserDao userDao;
     private final DirectorDao directorDao;
     private final FeedDao feedDao;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage,
+    public FilmService(@Qualifier("filmDbDaoImpl") FilmDao filmDao,
+                       @Qualifier("userDbDaoImpl") UserDao userDao,
                        DirectorDao directorDao,
                        FeedDao feedDao) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
+        this.filmDao = filmDao;
+        this.userDao = userDao;
         this.directorDao = directorDao;
         this.feedDao = feedDao;
     }
 
     public List<Film> getAllFilms() {
-        return filmStorage.findAll();
+        return filmDao.findAll();
     }
 
     public Film getFilmById(Integer id) {
@@ -41,19 +41,19 @@ public class FilmService {
     }
 
     public void addFilm(Film film) {
-        filmStorage.save(film);
+        filmDao.save(film);
     }
 
     public void updateFilmById(Film film) {
         Integer id = film.getId();
         findFilmOrElseThrow(id);
-        filmStorage.save(film);
+        filmDao.save(film);
     }
 
     public List<Film> findFilmsByDirectorId(Integer directorId, String sortBy) {
         findDirectorOrElseThrow(directorId);
         if (sortBy.equals("year") || sortBy.equals("likes")) {
-            return filmStorage.findFilmsByDirectorId(directorId, sortBy);
+            return filmDao.findFilmsByDirectorId(directorId, sortBy);
         } else {
             throw new InvalidParameter(String.format("Невалидное значение sortBy: %s", sortBy));
         }
@@ -61,20 +61,20 @@ public class FilmService {
 
     public void removeFilmById(Integer id) {
         findFilmOrElseThrow(id);
-        filmStorage.deleteById(id);
+        filmDao.deleteById(id);
     }
 
     public void addLikeToFilm(Integer filmId, Integer userId) {
         findFilmOrElseThrow(filmId);
         findUserOrElseThrow(userId);
-        filmStorage.addLike(filmId, userId);
+        filmDao.addLike(filmId, userId);
         feedDao.addFeed(userId, Event.LIKE, Operation.ADD, filmId);
     }
 
     public void removeLikeFromFilm(Integer filmId, Integer userId) {
         findFilmOrElseThrow(filmId);
         findUserOrElseThrow(userId);
-        filmStorage.deleteLike(filmId, userId);
+        filmDao.deleteLike(filmId, userId);
         feedDao.addFeed(userId, Event.LIKE, Operation.REMOVE, filmId);
     }
 
@@ -89,23 +89,23 @@ public class FilmService {
         params.put("year", year);
         params.put("count", count);
 
-        return filmStorage.getTopFilms(params);
+        return filmDao.getTopFilms(params);
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
         findUserOrElseThrow(userId);
         findUserOrElseThrow(friendId);
-        return filmStorage.getCommonFilms(userId, friendId);
+        return filmDao.getCommonFilms(userId, friendId);
     }
 
     private Film findFilmOrElseThrow(Integer filmId) {
-        return filmStorage.findById(filmId).orElseThrow(
+        return filmDao.findById(filmId).orElseThrow(
                 () -> new FilmNotFoundException(filmId)
         );
     }
 
     private void findUserOrElseThrow(Integer userId) {
-        userStorage.findById(userId).orElseThrow(
+        userDao.findById(userId).orElseThrow(
                 () -> new UserNotFoundException(userId)
         );
     }
@@ -117,6 +117,6 @@ public class FilmService {
     }
 
     public List<Film> findFilmsBySearch(String query, List<String> by) {
-        return filmStorage.findFilmsBySearch(query, by);
+        return filmDao.findFilmsBySearch(query, by);
     }
 }

@@ -20,13 +20,14 @@ import java.util.*;
 @Slf4j
 public class ReviewDao {
     private final JdbcTemplate jdbcTemplate;
-    private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
+    private final UserDao userDao;
+    private final FilmDao filmDao;
 
-    public ReviewDao(JdbcTemplate jdbcTemplate, @Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+    public ReviewDao(JdbcTemplate jdbcTemplate, @Qualifier("userDbDaoImpl") UserDao userDao,
+                     @Qualifier("filmDbDaoImpl") FilmDao filmDao) {
         this.jdbcTemplate = jdbcTemplate;
-        this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
+        this.userDao = userDao;
+        this.filmDao = filmDao;
     }
 
     public Review create(Review review) throws ValidationException, FilmNotFoundException, UserNotFoundException,
@@ -217,7 +218,7 @@ public class ReviewDao {
             throw new ValidationException("Отсутствует filmId.");
         }
 
-        if (filmStorage.findById(filmId).isEmpty()) {
+        if (filmDao.findById(filmId).isEmpty()) {
             log.error("Фильм с filmId = {} отсутствует.", filmId);
             throw new FilmNotFoundException(String.format("Фильм с filmId = %s отсутствует.", filmId));
         }
@@ -229,7 +230,7 @@ public class ReviewDao {
             throw new ValidationException("Отсутствует userId.");
         }
 
-        if (userStorage.findById(userId).isEmpty()) {
+        if (userDao.findById(userId).isEmpty()) {
             log.error("Пользователь с userId = {} отсутствует.", userId);
             throw new UserNotFoundException(String.format("Пользователь с userId = %s отсутствует.", userId));
         }

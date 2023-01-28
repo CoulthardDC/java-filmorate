@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface FilmStorage {
+public interface FilmDao {
     Integer count();
 
     void deleteAll();

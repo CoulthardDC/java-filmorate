@@ -10,22 +10,22 @@ import ru.yandex.practicum.filmorate.mapper.LikeExtractor;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.FilmDao;
+import ru.yandex.practicum.filmorate.storage.UserDao;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component("userDbStorage")
-public class UserDbStorage implements UserStorage {
+@Component("userDbDaoImpl")
+public class UserDbDaoImpl implements UserDao {
     private final JdbcTemplate jdbcTemplate;
-    private final FilmStorage filmStorage;
+    private final FilmDao filmDao;
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+    public UserDbDaoImpl(JdbcTemplate jdbcTemplate, @Qualifier("filmDbDaoImpl") FilmDao filmDao) {
         this.jdbcTemplate = jdbcTemplate;
-        this.filmStorage = filmStorage;
+        this.filmDao = filmDao;
     }
 
     @Override
@@ -166,7 +166,7 @@ public class UserDbStorage implements UserStorage {
         Set<Integer> recommendedFilmIds = getRecommendedFilmIds(allUsersLikes, userLikes);
 
         return recommendedFilmIds.stream()
-                .map(id -> filmStorage.findById(id).orElseThrow(() -> new FilmNotFoundException(id)))
+                .map(id -> filmDao.findById(id).orElseThrow(() -> new FilmNotFoundException(id)))
                 .collect(Collectors.toList());
     }
 

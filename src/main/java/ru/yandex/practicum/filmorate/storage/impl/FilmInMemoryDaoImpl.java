@@ -4,13 +4,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.FilmDao;
 
 import java.util.*;
 
 
 @Component
-public class InMemoryFilmStorage implements FilmStorage {
+public class FilmInMemoryDaoImpl implements FilmDao {
     private final Map<Integer, Film> films = new HashMap<>();
     private Integer id = 0;
 

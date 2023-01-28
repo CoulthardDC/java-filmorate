@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.impl.UserDbDaoImpl;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Sql(scripts = {"file:src/test/resources/test-schema.sql",
         "file:src/test/resources/test-data-films-users.sql"})
 class UserDbStorageTest {
-    private final UserDbStorage userStorage;
+    private final UserDbDaoImpl userStorage;
 
     @Test
     void testFindById() {
