@@ -319,14 +319,10 @@ public class FilmDbDaoImpl implements FilmDao {
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
                 "LEFT JOIN film_director AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.id " +
-                "WHERE fd.film_id IN (%s) OR fg.film_id IN (%s) OR l.film_id IN (%s) " +
+                "WHERE f.film_id IN (%s) " +
                 "ORDER BY (genre_id)";
 
-        List<Integer> allParams = new ArrayList<>(filmsId);
-        allParams.addAll(filmsId);
-        allParams.addAll(filmsId);
-
-        jdbcTemplate.query(String.format(sqlRequest, inSql, inSql, inSql), rs -> {
+        jdbcTemplate.query(String.format(sqlRequest, inSql), rs -> {
             int filmId = rs.getInt("film_id");
             int genreId = rs.getInt("genre_id");
             String genreName = rs.getString("genre_name");
@@ -348,6 +344,6 @@ public class FilmDbDaoImpl implements FilmDao {
                 director.setName(directorName);
                 filmMap.get(filmId).addDirector(director);
             }
-        }, allParams.toArray());
+        }, filmsId.toArray());
     }
 }
