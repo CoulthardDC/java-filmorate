@@ -45,8 +45,6 @@ public class FilmService {
     }
 
     public void updateFilmById(Film film) {
-        Integer id = film.getId();
-        findFilmOrElseThrow(id);
         filmDao.save(film);
     }
 
@@ -60,7 +58,6 @@ public class FilmService {
     }
 
     public void removeFilmById(Integer id) {
-        findFilmOrElseThrow(id);
         filmDao.deleteById(id);
     }
 

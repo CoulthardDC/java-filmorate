@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.MpaMapper;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -43,7 +44,9 @@ public class FilmDbDaoImpl implements FilmDao {
     public void deleteById(Integer filmId) {
         String sqlRequest = "DELETE FROM films" +
                 " WHERE film_id = ?";
-        jdbcTemplate.update(sqlRequest, filmId);
+        if (jdbcTemplate.update(sqlRequest, filmId) < 1) {
+            throw new FilmNotFoundException(filmId);
+        }
     }
 
     @Override
@@ -113,17 +116,19 @@ public class FilmDbDaoImpl implements FilmDao {
             }, keyHolder);
             film.setId(keyHolder.getKey().intValue());
         } else {
-            if (isFilm(film.getId())) {
-                String sqlRequest = "UPDATE films SET name = ?, description = ?," +
-                        " release_date = ?, duration = ?, mpa_id = ?" +
-                        " WHERE film_id = ?";
-                jdbcTemplate.update(sqlRequest, film.getName(),
-                        film.getDescription(),
-                        Date.valueOf(film.getReleaseDate()),
-                        film.getDuration(),
-                        film.getMpa().getId(),
-                        film.getId());
+            String sqlRequest = "UPDATE films SET name = ?, description = ?," +
+                    " release_date = ?, duration = ?, mpa_id = ?" +
+                    " WHERE film_id = ?";
+            int resultCount = jdbcTemplate.update(sqlRequest, film.getName(),
+                    film.getDescription(),
+                    Date.valueOf(film.getReleaseDate()),
+                    film.getDuration(),
+                    film.getMpa().getId(),
+                    film.getId());
+            if (resultCount < 1) {
+                throw new FilmNotFoundException(film.getId());
             }
+
         }
         String mpaRequest = "SELECT m.* FROM films f "
                 + "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id "
@@ -141,29 +146,22 @@ public class FilmDbDaoImpl implements FilmDao {
 
     @Override
     public Optional<List<Integer>> findLikesByFilmId(Integer filmId) {
-        if (isFilm(filmId)) {
-            String sqlRequest = "SELECT user_id FROM likes WHERE film_id = ?";
-            List<Integer> likes = jdbcTemplate.queryForList(sqlRequest, Integer.class, filmId);
-            return Optional.of(likes);
-        }
-        return Optional.empty();
+        String sqlRequest = "SELECT user_id FROM likes WHERE film_id = ?";
+        List<Integer> likes = jdbcTemplate.queryForList(sqlRequest, Integer.class, filmId);
+        return Optional.of(likes);
     }
 
     @Override
     public void addLike(Integer filmId, Integer userId) {
-        if (isFilm(filmId)) {
-            String sqlRequest = "merge into likes(film_id, user_id) " +
-                    "values (?, ?)";
-            jdbcTemplate.update(sqlRequest, filmId, userId);
-        }
+        String sqlRequest = "merge into likes(film_id, user_id) " +
+                "values (?, ?)";
+        jdbcTemplate.update(sqlRequest, filmId, userId);
     }
 
     @Override
     public void deleteLike(Integer filmId, Integer userId) {
-        if (isFilm(filmId)) {
-            String sqlRequest = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
-            jdbcTemplate.update(sqlRequest, filmId, userId);
-        }
+        String sqlRequest = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+        jdbcTemplate.update(sqlRequest, filmId, userId);
     }
 
     @Override
@@ -294,12 +292,6 @@ public class FilmDbDaoImpl implements FilmDao {
                 }
             });
         }
-    }
-
-    private boolean isFilm(Integer filmId) {
-        String sqlRequest = "SELECT count(*) FROM films WHERE film_id = ?";
-        Integer result = jdbcTemplate.queryForObject(sqlRequest, Integer.class, filmId);
-        return result != null && result != 0;
     }
 
     private void setAll(List<Film> films) {
