@@ -106,48 +106,37 @@ public class UserDbDaoImpl implements UserDao {
 
     @Override
     public Optional<List<Integer>> findFriendsByUserId(Integer userId) {
-        if (isUser(userId)) {
-            String sqlRequest = "SELECT to_user_id FROM friendship " +
-                    "WHERE from_user_id = ?";
-            List<Integer> idList = jdbcTemplate.queryForList(sqlRequest, Integer.class, userId);
-            return Optional.of(idList);
-        }
-        return Optional.empty();
+        String sqlRequest = "SELECT to_user_id FROM friendship " +
+                "WHERE from_user_id = ?";
+        List<Integer> idList = jdbcTemplate.queryForList(sqlRequest, Integer.class, userId);
+        return Optional.of(idList);
     }
 
     @Override
     public void addFriend(Integer userId, Integer friendId) {
-        if (isUser(userId) && isUser(friendId)) {
-            String sqlRequest = "MERGE INTO friendship(from_user_id, to_user_id) "
-                    + "VALUES (?, ?)";
-            jdbcTemplate.update(sqlRequest, userId, friendId);
-        }
+        String sqlRequest = "MERGE INTO friendship(from_user_id, to_user_id) "
+                + "VALUES (?, ?)";
+        jdbcTemplate.update(sqlRequest, userId, friendId);
     }
 
     @Override
     public void deleteFriend(Integer userId, Integer friendId) {
-        if (isUser(userId) && isUser(friendId)) {
-            String sqlRequest = "DELETE FROM friendship " +
-                    "WHERE from_user_id = ? AND to_user_id = ?";
-            jdbcTemplate.update(sqlRequest, userId, friendId);
-        }
+        String sqlRequest = "DELETE FROM friendship " +
+                "WHERE from_user_id = ? AND to_user_id = ?";
+        jdbcTemplate.update(sqlRequest, userId, friendId);
     }
 
     @Override
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
-        if (isUser(userId) && isUser(otherId)) {
-            String sqlRequest = "SELECT u.* FROM users AS u "
-                    + "JOIN friendship AS f ON u.user_id = f.to_user_id "
-                    + "WHERE f.from_user_id = ? "
-                    + "INTERSECT "
-                    + "SELECT uu.* FROM users AS uu "
-                    + "JOIN friendship AS ff ON uu.user_id = ff.to_user_id "
-                    + "WHERE ff.from_user_id = ? ";
+        String sqlRequest = "SELECT u.* FROM users AS u "
+                + "JOIN friendship AS f ON u.user_id = f.to_user_id "
+                + "WHERE f.from_user_id = ? "
+                + "INTERSECT "
+                + "SELECT uu.* FROM users AS uu "
+                + "JOIN friendship AS ff ON uu.user_id = ff.to_user_id "
+                + "WHERE ff.from_user_id = ? ";
 
-            return jdbcTemplate.query(sqlRequest, UserMapper::mapToUser, userId, otherId);
-        } else {
-            return new ArrayList<>();
-        }
+        return jdbcTemplate.query(sqlRequest, UserMapper::mapToUser, userId, otherId);
     }
 
     @Override
@@ -206,11 +195,5 @@ public class UserDbDaoImpl implements UserDao {
             userMap.get(rs.getInt("from_user_id"))
                     .addFriend(rs.getInt("to_user_id"));
             }, usersId.toArray());
-    }
-
-    private boolean isUser(Integer userId) {
-        String sqlRequest = "SELECT count(*) FROM users WHERE user_id = ?";
-        Integer result = jdbcTemplate.queryForObject(sqlRequest, Integer.class, userId);
-        return result != 0;
     }
 }

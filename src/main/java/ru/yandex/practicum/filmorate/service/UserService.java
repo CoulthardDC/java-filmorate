@@ -80,6 +80,8 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
+        findUserOrElseThrow(userId);
+        findUserOrElseThrow(otherId);
         return userDao.getCommonFriends(userId, otherId);
     }
 
