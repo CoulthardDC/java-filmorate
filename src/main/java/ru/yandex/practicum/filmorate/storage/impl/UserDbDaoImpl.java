@@ -6,6 +6,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.LikeExtractor;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -39,9 +40,9 @@ public class UserDbDaoImpl implements UserDao {
 
     @Override
     public void deleteById(Integer userId) {
-        if (isUser(userId)) {
-            String sqlRequest = "DELETE FROM users WHERE user_id = ?";
-            jdbcTemplate.update(sqlRequest, userId);
+        String sqlRequest = "DELETE FROM users WHERE user_id = ?";
+        if (jdbcTemplate.update(sqlRequest, userId) < 1) {
+            throw new UserNotFoundException(userId);
         }
     }
 
@@ -87,16 +88,17 @@ public class UserDbDaoImpl implements UserDao {
             }, keyHolder);
             user.setId(keyHolder.getKey().intValue());
         } else {
-            if (isUser(user.getId())) {
-                String sqlRequest = "UPDATE users SET " +
-                        "login = ?, email = ?, name = ?, birthday = ?" +
-                        "WHERE user_id = ?";
-                jdbcTemplate.update(sqlRequest, user.getLogin(),
-                        user.getEmail(),
-                        user.getName(),
-                        Date.valueOf(user.getBirthday()),
-                        user.getId()
-                );
+            String sqlRequest = "UPDATE users SET " +
+                    "login = ?, email = ?, name = ?, birthday = ?" +
+                    "WHERE user_id = ?";
+            int resultCount = jdbcTemplate.update(sqlRequest, user.getLogin(),
+                    user.getEmail(),
+                    user.getName(),
+                    Date.valueOf(user.getBirthday()),
+                    user.getId()
+            );
+            if (resultCount < 1) {
+                throw new UserNotFoundException(user.getId());
             }
         }
         return user;

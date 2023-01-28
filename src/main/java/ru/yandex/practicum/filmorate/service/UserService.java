@@ -44,13 +44,10 @@ public class UserService {
     }
 
     public void updateUserById(User user) {
-        Integer id = user.getId();
-        findUserOrElseThrow(id);
         userDao.save(user);
     }
 
     public void removeUserById(Integer id) {
-        findUserOrElseThrow(id);
         userDao.deleteById(id);
     }
 
@@ -63,8 +60,6 @@ public class UserService {
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        findUserOrElseThrow(userId);
-        findUserOrElseThrow(friendId);
         userDao.deleteFriend(userId, friendId);
         feedDao.addFeed(userId, Event.FRIEND, Operation.REMOVE, friendId);
     }
