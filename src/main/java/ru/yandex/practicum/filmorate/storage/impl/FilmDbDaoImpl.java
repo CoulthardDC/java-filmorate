@@ -319,14 +319,16 @@ public class FilmDbDaoImpl implements FilmDao {
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
                 "LEFT JOIN film_director AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.id " +
-                "WHERE fd.film_id IN (%s) OR fg.film_id IN (%s) " +
+                "WHERE fd.film_id IN (%s) OR fg.film_id IN (%s) OR l.film_id IN (%s) " +
                 "ORDER BY (genre_id)";
 
-        filmsId.addAll(filmsId);
+        List<Integer> allParams = new ArrayList<>(filmsId);
+        allParams.addAll(filmsId);
+        allParams.addAll(filmsId);
 
-        jdbcTemplate.query(String.format(sqlRequest, inSql, inSql), rs -> {
-            Integer filmId = rs.getInt("film_id");
-            Integer genreId = rs.getInt("genre_id");
+        jdbcTemplate.query(String.format(sqlRequest, inSql, inSql, inSql), rs -> {
+            int filmId = rs.getInt("film_id");
+            int genreId = rs.getInt("genre_id");
             String genreName = rs.getString("genre_name");
             if (genreId != 0) {
                 Genre genre = new Genre();
@@ -334,9 +336,11 @@ public class FilmDbDaoImpl implements FilmDao {
                 genre.setName(genreName);
                 filmMap.get(filmId).addGenre(genre);
             }
-            filmMap.get(filmId)
-                    .addLike(rs.getInt("user_id"));
-            Integer directorId = rs.getInt("director_id");
+            int userId = rs.getInt("user_id");
+            if (userId != 0) {
+                filmMap.get(filmId).addLike(userId);
+            }
+            int directorId = rs.getInt("director_id");
             String directorName = rs.getString("name");
             if (directorId != 0) {
                 Director director = new Director();
@@ -344,6 +348,6 @@ public class FilmDbDaoImpl implements FilmDao {
                 director.setName(directorName);
                 filmMap.get(filmId).addDirector(director);
             }
-        }, filmsId.toArray());
+        }, allParams.toArray());
     }
 }
