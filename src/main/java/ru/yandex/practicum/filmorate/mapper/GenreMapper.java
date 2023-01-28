@@ -9,7 +9,7 @@ public class GenreMapper {
     public static Genre mapToGenre(ResultSet rs, int rowNum) throws SQLException {
         Genre genre = new Genre();
         genre.setId(rs.getInt("genre_id"));
-        genre.setName(rs.getString("genre_name"));
+        genre.setName(rs.getString("name"));
         return genre;
     }
 }

@@ -311,7 +311,7 @@ public class FilmDbDaoImpl implements FilmDao {
 
         String inSql = String.join(",", Collections.nCopies(filmsId.size(), "?"));
 
-        String sqlRequest = "SELECT f.film_id, l.user_id, g.genre_id, g.genre_name," +
+        String sqlRequest = "SELECT f.film_id, l.user_id, g.genre_id, g.name AS genre_name," +
                 "fd.director_id, d.name " +
                 "FROM films AS f " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
@@ -323,7 +323,7 @@ public class FilmDbDaoImpl implements FilmDao {
                 "ORDER BY (genre_id)";
 
         filmsId.addAll(filmsId);
-        
+
         jdbcTemplate.query(String.format(sqlRequest, inSql, inSql), rs -> {
             Integer filmId = rs.getInt("film_id");
             Integer genreId = rs.getInt("genre_id");

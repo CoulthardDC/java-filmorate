@@ -1,19 +1,19 @@
-merge into genres(GENRE_ID, genre_name)
+merge into genres(GENRE_ID, name)
     values (1, 'Комедия');
 
-merge into genres(GENRE_ID, genre_name)
+merge into genres(GENRE_ID, name)
     values (2, 'Драма');
 
-merge into genres(GENRE_ID, genre_name)
+merge into genres(GENRE_ID, name)
     values (3, 'Мультфильм');
 
-merge into genres(GENRE_ID, genre_name)
+merge into genres(GENRE_ID, name)
     values (4, 'Триллер');
 
-merge into genres(GENRE_ID, genre_name)
+merge into genres(GENRE_ID, name)
     values (5, 'Документальный');
 
-merge into genres(GENRE_ID, genre_name)
+merge into genres(GENRE_ID, name)
     values (6, 'Боевик');
 
 

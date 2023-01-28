@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS friendship (
 
 CREATE TABLE IF NOT EXISTS genres (
     genre_id INT,
-    genre_name VARCHAR(50),
+    name VARCHAR(50),
     CONSTRAINT genre_pk PRIMARY KEY (genre_id)
 );
 
