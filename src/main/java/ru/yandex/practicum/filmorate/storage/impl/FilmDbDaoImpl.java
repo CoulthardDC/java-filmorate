@@ -128,7 +128,6 @@ public class FilmDbDaoImpl implements FilmDao {
             if (resultCount < 1) {
                 throw new FilmNotFoundException(film.getId());
             }
-
         }
         String mpaRequest = "SELECT m.* FROM films f "
                 + "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id "
@@ -312,52 +311,39 @@ public class FilmDbDaoImpl implements FilmDao {
 
         String inSql = String.join(",", Collections.nCopies(filmsId.size(), "?"));
 
-        setGenres(filmsId, filmMap, inSql);
-        setLikes(filmsId, filmMap, inSql);
-        setDirectors(filmsId, filmMap, inSql);
-    }
-
-    private void setGenres(List<Integer> filmsId, Map<Integer, Film> filmMap, String inSql) {
-        String sqlRequest = "SELECT fg.film_id, g.* " +
-                "FROM film_genres AS fg " +
+        String sqlRequest = "SELECT f.film_id, l.user_id, g.genre_id, g.genre_name," +
+                "fd.director_id, d.name " +
+                "FROM films AS f " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "WHERE fg.film_id in (%s) " +
-                "ORDER BY fg.genre_id";
-        jdbcTemplate.query(String.format(sqlRequest, inSql), rs -> {
-                    Integer filmId = rs.getInt("film_id");
-                    Integer genreId = rs.getInt("genre_id");
-                    String genreName = rs.getString("name");
-                    Genre genre = new Genre();
-                    genre.setId(genreId);
-                    genre.setName(genreName);
-                    filmMap.get(filmId).addGenre(genre);
-                },
-                filmsId.toArray());
-    }
-
-    private void setLikes(List<Integer> filmsId, Map<Integer, Film> filmMap, String inSql) {
-        String sqlRequest = "SELECT * FROM likes WHERE film_id in (%s)";
-        jdbcTemplate.query(String.format(sqlRequest, inSql), rs -> {
-            filmMap.get(rs.getInt("film_id"))
-                    .addLike(rs.getInt("user_id"));
-        }, filmsId.toArray());
-    }
-
-    private void setDirectors(List<Integer> filmsId, Map<Integer, Film> filmMap, String inSql) {
-        String sqlRequest = "SELECT fd.film_id, d.* " +
-                "FROM film_director AS fd " +
+                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_director AS fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors AS d ON fd.director_id = d.id " +
-                "WHERE fd.film_id in (%s) " +
-                "ORDER BY fd.director_id";
-        jdbcTemplate.query(String.format(sqlRequest, inSql), rs -> {
-                    Integer filmId = rs.getInt("film_id");
-                    Integer directorId = rs.getInt("id");
-                    String directorName = rs.getString("name");
-                    Director director = new Director();
-                    director.setId(directorId);
-                    director.setName(directorName);
-                    filmMap.get(filmId).addDirector(director);
-                },
-                filmsId.toArray());
+                "WHERE fd.film_id IN (%s) OR fg.film_id IN (%s) " +
+                "ORDER BY (genre_id)";
+
+        filmsId.addAll(filmsId);
+        
+        jdbcTemplate.query(String.format(sqlRequest, inSql, inSql), rs -> {
+            Integer filmId = rs.getInt("film_id");
+            Integer genreId = rs.getInt("genre_id");
+            String genreName = rs.getString("genre_name");
+            if (genreId != 0) {
+                Genre genre = new Genre();
+                genre.setId(genreId);
+                genre.setName(genreName);
+                filmMap.get(filmId).addGenre(genre);
+            }
+            filmMap.get(filmId)
+                    .addLike(rs.getInt("user_id"));
+            Integer directorId = rs.getInt("director_id");
+            String directorName = rs.getString("name");
+            if (directorId != 0) {
+                Director director = new Director();
+                director.setId(directorId);
+                director.setName(directorName);
+                filmMap.get(filmId).addDirector(director);
+            }
+        }, filmsId.toArray());
     }
 }
