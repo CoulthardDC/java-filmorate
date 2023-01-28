@@ -37,50 +37,37 @@ public class DirectorDaoImpl implements DirectorDao {
 
     @Override
     public Director update(Director director) {
-        if (isDirector(director.getId())) {
-            String sqlRequest = "UPDATE directors SET name = ?" +
+        String sqlRequest = "UPDATE directors SET name = ?" +
                     " WHERE id = ?";
-            jdbcTemplate.update(sqlRequest, director.getName(),
+        int resultCount = jdbcTemplate.update(sqlRequest, director.getName(),
                     director.getId());
-            return director;
-        } else {
+        if (resultCount < 1) {
             throw new DirectorNotFoundException(director.getId());
         }
-
+        return director;
     }
 
     @Override
     public Director create(Director director) {
-        if (director.getId() == null || !isDirector(director.getId())) {
-            String sqlRequest = "INSERT INTO directors (name)"
-                    + " VALUES (?);";
-            KeyHolder keyHolder = new GeneratedKeyHolder();
-            jdbcTemplate.update(connection -> {
-                PreparedStatement stmt = connection.prepareStatement(sqlRequest,
-                        new String[]{"id"}
-                );
-                stmt.setString(1, director.getName());
-                return stmt;
+        String sqlRequest = "INSERT INTO directors (name)"
+                + " VALUES (?);";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(sqlRequest,
+                    new String[]{"id"}
+            );
+            stmt.setString(1, director.getName());
+            return stmt;
             }, keyHolder);
-            director.setId(keyHolder.getKey().intValue());
-            return director;
-        } else {
-            throw new DirectorNotFoundException(director.getId());
-        }
+        director.setId(keyHolder.getKey().intValue());
+        return director;
     }
-
 
     @Override
     public void deleteById(Integer id) {
-        if (isDirector(id)) {
-            String sqlRequest = "DELETE FROM directors WHERE id = ?";
-            jdbcTemplate.update(sqlRequest, id);
+        String sqlRequest = "DELETE FROM directors WHERE id = ?";
+        if (jdbcTemplate.update(sqlRequest, id) < 1) {
+            throw new DirectorNotFoundException(id);
         }
-    }
-
-    private boolean isDirector(Integer id) {
-        String sqlRequest = "SELECT count(*) FROM directors WHERE id = ?";
-        Integer result = jdbcTemplate.queryForObject(sqlRequest, Integer.class, id);
-        return result != null && result != 0;
     }
 }

@@ -20,7 +20,9 @@ public class DirectorService {
     }
 
     public Director getDirectorById(Integer id) {
-        return findDirectorOrElseThrow(id);
+        return directorDao.findById(id).orElseThrow(
+                () -> new DirectorNotFoundException(id)
+        );
     }
 
     public Director createDirector(Director director) {
@@ -28,18 +30,10 @@ public class DirectorService {
     }
 
     public Director updateDirector(Director director) {
-        findDirectorOrElseThrow(director.getId());
         return directorDao.update(director);
     }
 
     public void deleteDirectorById(Integer id) {
-        findDirectorOrElseThrow(id);
         directorDao.deleteById(id);
-    }
-
-    private Director findDirectorOrElseThrow(Integer id) {
-        return directorDao.findById(id).orElseThrow(
-                () -> new DirectorNotFoundException(id)
-        );
     }
 }
