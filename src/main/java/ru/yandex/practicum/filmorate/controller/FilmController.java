@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -16,7 +17,6 @@ import java.util.List;
 @RequestMapping(value = "/films")
 @Slf4j
 public class FilmController {
-
     private final FilmService filmService;
 
     @Autowired
@@ -37,10 +37,12 @@ public class FilmController {
     }
 
     @GetMapping(value = "/popular")
-    public List<Film> findTopFilms(@RequestParam(defaultValue = "10") int count) {
-        log.info("Получен запрос к эндпоинту: {} /films/{}?count={}", "GET", "popular", count);
-        return filmService.getTopFilms(count);
-
+    public List<Film> findTopFilms(@RequestParam(defaultValue = "10") int count,
+                                   @RequestParam(defaultValue = "-1") int genreId,
+                                   @RequestParam(defaultValue = "-1") int year) {
+        log.info("Получен запрос к эндпоинту: {} /films/{}?count={}&genreId={}&year={}",
+                "GET", "popular", count, genreId, year);
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -69,5 +71,30 @@ public class FilmController {
         log.info("Получен запрос к эндпоинту: {} /films/{}/like/{}", "DELETE", filmId, userId);
         filmService.removeLikeFromFilm(filmId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Object> removeFilmById(@PathVariable("id") int filmId) {
+        log.info("Получен запрос к эндпоинту: {} /films/{}", "DELETE", filmId);
+        filmService.removeFilmById(filmId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @GetMapping(value = "/director/{directorId}")
+    public List<Film> findFilmsByDirectorId(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.info("Получен запрос к эндпоинту: {} /films/{}/{}?sortBy={}", "GET", "director", directorId, sortBy);
+        return filmService.findFilmsByDirectorId(directorId, sortBy);
+    }
+
+    @GetMapping( "/search")
+    public List<Film> findFilmsBySearch(@RequestParam String query, @RequestParam List<String> by)
+            throws ValidationException {
+        return filmService.findFilmsBySearch(query, by);
+    }
+
+    @GetMapping(value = "/common")
+    public List<Film> findCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        log.info("Получен запрос к эндпоинту: {} /common{}/{}", "GET", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 }

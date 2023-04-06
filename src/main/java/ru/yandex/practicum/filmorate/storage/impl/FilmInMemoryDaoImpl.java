@@ -1,14 +1,16 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.FilmDao;
 
 import java.util.*;
 
 
 @Component
-public class InMemoryFilmStorage implements FilmStorage {
+public class FilmInMemoryDaoImpl implements FilmDao {
     private final Map<Integer, Film> films = new HashMap<>();
     private Integer id = 0;
 
@@ -48,25 +50,40 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Optional<List<Integer>> findLikesByFilmId(Integer filmId) {
-        if(findById(filmId).isPresent()) {
+        if (findById(filmId).isPresent()) {
             return Optional.of(new ArrayList<>(films.get(filmId).getLikes()));
-        } else{
+        } else {
             return Optional.empty();
         }
     }
 
     @Override
     public void addLike(Integer filmId, Integer userId) {
-
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
     public void deleteLike(Integer filmId, Integer userId) {
-
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
-    public List<Film> getTopFilms(Integer count) {
-        return null;
+    public List<Film> getTopFilms(Map<String, Integer> params) {
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @Override
+    public List<Film> findFilmsByDirectorId(Integer directorId, String sortBy) {
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @Override
+    public List<Film> findFilmsBySearch(String query, List<String> by) {
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    }
+    
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 }

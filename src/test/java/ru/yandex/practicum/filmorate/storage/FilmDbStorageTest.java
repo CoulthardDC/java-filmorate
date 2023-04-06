@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.impl.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.impl.FilmDbDaoImpl;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Sql(scripts = {"file:src/test/resources/test-schema.sql",
         "file:src/test/resources/test-data-films-users.sql"})
 class FilmDbStorageTest {
-    private final FilmDbStorage filmStorage;
+    private final FilmDbDaoImpl filmStorage;
 
     @Test
     void testFindById() {
@@ -98,17 +98,6 @@ class FilmDbStorageTest {
         filmStorage.deleteLike(1, 2);
         assertThat(filmStorage.findById(1).get())
                 .hasFieldOrPropertyWithValue("likes", Set.of());
-    }
-
-    @Test
-    void testGetTopFilms() {
-        filmStorage.addLike(2, 2);
-
-
-        assertThat(filmStorage.getTopFilms(2))
-                .isNotEmpty()
-                .isEqualTo(List.of(filmStorage.findById(2).get(),
-                        filmStorage.findById(1).get()));
     }
 
     @Test

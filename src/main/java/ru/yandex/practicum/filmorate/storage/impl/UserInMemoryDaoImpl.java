@@ -1,24 +1,22 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.UserDao;
 
 import java.util.*;
 
 @Component
-public class InMemoryUserStorage implements UserStorage {
+public class UserInMemoryDaoImpl implements UserDao {
     private final Map<Integer, User> users = new HashMap<>();
     private Integer id = 0;
 
     @Override
     public Integer count() {
         return id;
-    }
-
-    @Override
-    public void deleteAll() {
-        users.clear();
     }
 
     @Override
@@ -59,16 +57,21 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(Integer userId, Integer otherId) {
-
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
     public void deleteFriend(Integer userId, Integer otherId) {
-
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
-        return null;
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @Override
+    public List<Film> findRecommendations(Integer userId) {
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -47,6 +49,12 @@ public class UserController {
         return userService.getCommonFriends(userId, otherId);
     }
 
+    @GetMapping(value = "/{id}/feed")
+    public List<Feed> findFeedsByUserId(@PathVariable("id") int userId) {
+        log.info("Получен запрос к эндпоинту: {} /users/{}/feeds", "GET", userId);
+        return userService.getFeeds(userId);
+    }
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public User create(@Valid @RequestBody User user) {
         log.info("Получен запрос к эндпоинту: {} {}", "POST", "/users");
@@ -69,9 +77,22 @@ public class UserController {
     }
 
     @DeleteMapping(value = "/{id}/friends/{friendId}")
-    public ResponseEntity<?> removeFromFriends(@PathVariable("id") int userId, @PathVariable int friendId) {
+    public ResponseEntity<Object> removeFromFriends(@PathVariable("id") int userId, @PathVariable int friendId) {
         log.info("Получение запроса к эндпоинту: {} users/{}/friends/{}", "DELETE", userId, friendId);
         userService.removeFriend(userId, friendId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Object> removeUserBuId(@PathVariable("id") int userId) {
+        log.info("Получен запрос к эндпоинту: {} /users/{}", "DELETE", userId);
+        userService.removeUserById(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @GetMapping(value = "/{id}/recommendations")
+    public List<Film> findRecommendations(@PathVariable("id") int userId) {
+        log.info("Получен запрос к эндпоинту: {} /users/{}/recommendations", "GET", userId);
+        return userService.findRecommendations(userId);
     }
 }

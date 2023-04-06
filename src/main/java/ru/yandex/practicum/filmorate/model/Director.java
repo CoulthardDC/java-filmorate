@@ -1,15 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
+import javax.validation.constraints.NotBlank;
+
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@AllArgsConstructor
-public class Friendship {
-    Integer fromUserId;
-    Integer toUserId;
-    boolean status;
+public class Director {
+    private Integer id;
+    @NotBlank
+    private String name;
 }
